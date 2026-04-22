@@ -1,0 +1,32 @@
+# --- SECRETS  ---
+
+backend/.env
+.env
+
+# --- PYTHON & BACKEND JUNK ---
+
+**/__pycache__/
+**/*.py[cod]
+**/*.db
+**/*.sqlite3
+
+# --- VIRTUAL ENVIRONMENTS ---
+
+**/venv/
+**/env/
+**/.venv/
+
+# --- AI & DATA JUNK ---
+
+# --- **/checkpoint/---
+# ---**/*.log ---
+
+# --- FRONTEND JUNK  ---
+
+# --- **/node_modules/ ---
+# --- **/dist/ ---
+# --- **/build/ ---
+
+# --- OPERATING SYSTEM JUNK ---
+.DS_Store
+Thumbs.db
