@@ -5,6 +5,7 @@ from datetime import datetime
 class UserCreate(BaseModel):
     username: str
     password: str
+    specialty: str
 
 class UserLogin(BaseModel):
     username: str
@@ -38,3 +39,8 @@ class PatientResponse(PatientCreate):
 
     class Config:
         from_attributes = True
+
+class PatientUpdate(BaseModel):
+    full_name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None

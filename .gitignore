@@ -18,6 +18,7 @@ backend/.env
 
 # --- AI & DATA JUNK ---
 
+*.h5
 # --- **/checkpoint/---
 # ---**/*.log ---
 

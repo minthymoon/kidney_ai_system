@@ -7,7 +7,8 @@ class User(Base):
     __tablename__ = "users"  
     id = Column(Integer, primary_key=True, index=True) 
     username = Column(String, unique=True, index=True) 
-    password_hash = Column(String) # Encrypted password 
+    password_hash = Column(String) 
+    specialty = Column(String)
 
     patients = relationship("Patient", back_populates="doctor")
 
@@ -22,7 +23,7 @@ class Patient(Base):
     doctor_id = Column(Integer, ForeignKey("users.id"))
     doctor = relationship("User", back_populates="patients")
     
-    # This "relationship" allows us to say patient.records 
+ 
     records = relationship("MedicalRecord", back_populates="owner")
 
 
@@ -34,12 +35,11 @@ class MedicalRecord(Base):
     
     doctor_id = Column(Integer, ForeignKey("users.id"))
     
-    image_url = Column(String)     # Path to the kidney image
+    image_url = Column(String)    
     ai_prediction = Column(String) 
     confidence_score = Column(Float)
     doctor_notes = Column(Text)     
     
     scan_date = Column(DateTime, default=datetime.datetime.utcnow)
     
-    # The "other side" of the relationship
     owner = relationship("Patient", back_populates="records")
