@@ -33,9 +33,11 @@ def verify_password(plain_password, hashed_password):
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # //TODO: add payload to token id ... ect 
+    
     to_encode.update({"exp": expire})
     
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.sign(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 #oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -51,6 +53,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     try:
 
         #fucking swagger auth token thing get rid of it when ur done
+        # check postman and learn it
         if token.startswith("Bearer "):
             token = token.replace("Bearer ", "")
 
