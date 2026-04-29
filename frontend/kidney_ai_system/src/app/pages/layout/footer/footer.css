@@ -1,0 +1,137 @@
+/* ── Footer shell ── */
+.site-footer {
+  background: #0f2744;
+  color: #fff;
+  padding: 3rem 1.5rem 1.75rem;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+/* ── Top row ── */
+.footer-top {
+  display: flex;
+  gap: 3rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* ── Brand ── */
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+.footer-logo {
+  width: 42px;
+  height: 42px;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  flex-shrink: 0;
+}
+
+.brand-name {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.brand-tagline {
+  display: block;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 1px;
+}
+
+/* ── Nav groups ── */
+.footer-nav {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 130px;
+}
+
+.nav-group h4 {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.nav-group a {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: color 0.15s;
+  width: fit-content;
+}
+
+.nav-group a:hover {
+  color: #fff;
+}
+
+/* ── Divider ── */
+.footer-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 2.5rem 0 1.5rem;
+}
+
+/* ── Bottom row ── */
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-copy {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Disclaimer ── */
+.footer-disclaimer {
+  margin: 0;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.25);
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  .footer-top {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .footer-nav {
+    gap: 2rem;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
