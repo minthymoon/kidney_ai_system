@@ -21,12 +21,12 @@ export class CreatePatient {
 
   constructor() {
     this.patientForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
+      first_name: ['', Validators.required],
+      last_name: ['', Validators.required],
+      date_of_birth: ['', Validators.required],
       gender: ['', Validators.required],
-      referringPhysician: [''],
-      phone: [''],
+      referring_physician: [''],
+      phone_number: [''],
       email: ['', [Validators.email, Validators.required]],
       address: [''],
     });

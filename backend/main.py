@@ -64,19 +64,11 @@ def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-<<<<<<< HEAD
     return {
     "message": "Doctor account created successfully",
     "status": "success",
     "data": new_user
 }
-=======
-    return {"message": f"{new_user.username} created successfully!"}
-
-    # forntfacingMessage:'created successfully'
-    # status: 201
-    # data: new_user.username
->>>>>>> e7e7a42a3780b4fed94f2ff60f490159dc72e640
     
 @app.post("/login")
 def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
@@ -102,7 +94,6 @@ def add_patient(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
 ):
-<<<<<<< HEAD
    existing_patient = db.query(models.Patient).filter(models.Patient.email == patient_in.email).first()
    if existing_patient:
         raise HTTPException(
@@ -119,26 +110,6 @@ def add_patient(
        address=patient_in.address,
        referring_physician=patient_in.referring_physician,
        doctor_id=current_user.id
-=======
-
-    # make email reqiered and check if patient exists or not in the db for validation
-    
-    #  firstName: ['', Validators.required],
-    #   lastName: ['', Validators.required],
-    #   dateOfBirth: ['', Validators.required],
-    #   gender: ['', Validators.required],
-    #   referringPhysician: [''],
-    #   phone: [''],
-    #   email: ['', Validators.email,Validators.required],
-    #   address: [''],
-    #  });
-   
-    new_patient = models.Patient(
-        full_name=patient_in.full_name,
-        age=patient_in.age,
-        gender=patient_in.gender,
-        doctor_id=current_user.id  
->>>>>>> e7e7a42a3780b4fed94f2ff60f490159dc72e640
     )
     
    

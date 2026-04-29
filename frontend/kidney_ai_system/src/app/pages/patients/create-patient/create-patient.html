@@ -44,33 +44,33 @@
               <div class="field">
                 <label>First Name <span class="req">*</span></label>
                 <input
-                  formControlName="firstName"
+                  formControlName="first_name"
                   type="text"
                   placeholder="e.g. John"
-                  [class.error]="isInvalid('firstName')"
+                  [class.error]="isInvalid('first_name')"
                 />
-                <span class="err-msg" *ngIf="isInvalid('firstName')">First name is required</span>
+                <span class="err-msg" *ngIf="isInvalid('first_name')">First name is required</span>
               </div>
 
               <div class="field">
                 <label>Last Name <span class="req">*</span></label>
                 <input
-                  formControlName="lastName"
+                  formControlName="last_name"
                   type="text"
                   placeholder="e.g. Doe"
-                  [class.error]="isInvalid('lastName')"
+                  [class.error]="isInvalid('last_name')"
                 />
-                <span class="err-msg" *ngIf="isInvalid('lastName')">Last name is required</span>
+                <span class="err-msg" *ngIf="isInvalid('last_name')">Last name is required</span>
               </div>
 
               <div class="field">
                 <label>Date of Birth <span class="req">*</span></label>
                 <input
-                  formControlName="dateOfBirth"
+                  formControlName="date_of_birth"
                   type="date"
-                  [class.error]="isInvalid('dateOfBirth')"
+                  [class.error]="isInvalid('date_of_birth')"
                 />
-                <span class="err-msg" *ngIf="isInvalid('dateOfBirth')"
+                <span class="err-msg" *ngIf="isInvalid('date_of_birth')"
                   >Date of birth is required</span
                 >
               </div>
@@ -129,7 +129,7 @@
                   <label>Referring Physician <span class="optional-lbl">Optional</span></label>
                   <div class="input-icon-wrap">
                     <input
-                      formControlName="referringPhysician"
+                      formControlName="referring_physician"
                       type="text"
                       placeholder="Dr. Smith"
                     />
@@ -164,7 +164,7 @@
             <div class="form-grid two-col">
               <div class="field">
                 <label>Phone Number</label>
-                <input formControlName="phone" type="tel" placeholder="(555) 123-4567" />
+                <input formControlName="phone_number" type="tel" placeholder="(555) 123-4567" />
               </div>
 
               <div class="field">
