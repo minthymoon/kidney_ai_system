@@ -1,5 +1,5 @@
 export const environment = {
-  beUrl: 'http://localhost:3000/api/',
+  beUrl: 'http://127.0.0.1:8000/',
   mode: 'development',
   isProduction: false,
 };

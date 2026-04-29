@@ -7,12 +7,26 @@ from .auth import get_password_hash, verify_password, create_access_token, get_c
 from datetime import datetime
 from typing import List, Optional
 from . import schemas
+from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=engine)
 
 
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:4200",  
+    "http://127.0.0.1:4200", 
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          
+    allow_credentials=True,
+    allow_methods=["*"],            
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def root():
@@ -64,19 +78,11 @@ def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-<<<<<<< HEAD
     return {
     "message": "Doctor account created successfully",
     "status": "success",
     "data": new_user
 }
-=======
-    return {"message": f"{new_user.username} created successfully!"}
-
-    # forntfacingMessage:'created successfully'
-    # status: 201
-    # data: new_user.username
->>>>>>> e7e7a42a3780b4fed94f2ff60f490159dc72e640
     
 @app.post("/login")
 def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
@@ -91,9 +97,11 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": user.username})
     
     return {
-        "access_token": access_token, 
-        "token_type": "bearer",
-        "message": f"Welcome back, {user.username}!"
+    
+         "message": "Patient record created successfully",
+        "status": "success",
+        "data": {"access_token": access_token,}
+       
     }
 
 @app.post("/patients", response_model=schemas.StandardResponse[schemas.PatientResponse])
@@ -102,7 +110,6 @@ def add_patient(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
 ):
-<<<<<<< HEAD
    existing_patient = db.query(models.Patient).filter(models.Patient.email == patient_in.email).first()
    if existing_patient:
         raise HTTPException(
@@ -119,26 +126,6 @@ def add_patient(
        address=patient_in.address,
        referring_physician=patient_in.referring_physician,
        doctor_id=current_user.id
-=======
-
-    # make email reqiered and check if patient exists or not in the db for validation
-    
-    #  firstName: ['', Validators.required],
-    #   lastName: ['', Validators.required],
-    #   dateOfBirth: ['', Validators.required],
-    #   gender: ['', Validators.required],
-    #   referringPhysician: [''],
-    #   phone: [''],
-    #   email: ['', Validators.email,Validators.required],
-    #   address: [''],
-    #  });
-   
-    new_patient = models.Patient(
-        full_name=patient_in.full_name,
-        age=patient_in.age,
-        gender=patient_in.gender,
-        doctor_id=current_user.id  
->>>>>>> e7e7a42a3780b4fed94f2ff60f490159dc72e640
     )
     
    
