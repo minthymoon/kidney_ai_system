@@ -1,11 +1,27 @@
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
+from pydantic import BaseModel, EmailStr
+from typing import Optional, Generic, TypeVar, List, Any
+from datetime import date, datetime
+
+T = TypeVar("T")
 
 class UserCreate(BaseModel):
     username: str
     password: str
-    specialty: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone_number: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    phone_number: str
+
+    class Config:
+        from_attributes = True
 
 class UserLogin(BaseModel):
     username: str
@@ -27,9 +43,14 @@ class MedicalRecordResponse(MedicalRecordCreate):
         from_attributes = True
 
 class PatientCreate(BaseModel):
-    full_name: str
-    age: int
+    first_name: str
+    last_name: str
+    date_of_birth: date
     gender: str
+    phone_number: Optional[str] = None
+    email: EmailStr 
+    address: Optional[str] = None
+    referring_physician: Optional[str] = None
 
 class PatientResponse(PatientCreate):
     id: int
@@ -37,10 +58,25 @@ class PatientResponse(PatientCreate):
 
     records: list[MedicalRecordResponse] = []
 
+    age: Optional[int] = None
+
     class Config:
         from_attributes = True
 
 class PatientUpdate(BaseModel):
-    full_name: Optional[str] = None
-    age: Optional[int] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    date_of_birth: Optional[date] = None
     gender: Optional[str] = None
+    phone_number: Optional[str] = None
+    email: Optional[EmailStr] = None
+    address: Optional[str] = None
+    referring_physician: Optional[str] = None
+
+class StandardResponse(BaseModel, Generic[T]):
+    message: str
+    status: str 
+    data: Optional[T] = None
+
+    class Config:
+        from_attributes = True

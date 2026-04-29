@@ -53,7 +53,10 @@ def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     new_user = models.User(
         username=user_data.username, 
         password_hash=hashed_pwd,
-        specialty=user_data.specialty
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        email=user_data.email,
+        phone_number=user_data.phone_number
     )
     
    
@@ -61,11 +64,19 @@ def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
+<<<<<<< HEAD
+    return {
+    "message": "Doctor account created successfully",
+    "status": "success",
+    "data": new_user
+}
+=======
     return {"message": f"{new_user.username} created successfully!"}
 
     # forntfacingMessage:'created successfully'
     # status: 201
     # data: new_user.username
+>>>>>>> e7e7a42a3780b4fed94f2ff60f490159dc72e640
     
 @app.post("/login")
 def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
@@ -85,12 +96,30 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
         "message": f"Welcome back, {user.username}!"
     }
 
-@app.post("/patients", response_model=schemas.PatientResponse)
+@app.post("/patients", response_model=schemas.StandardResponse[schemas.PatientResponse])
 def add_patient(
     patient_in: schemas.PatientCreate, 
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
 ):
+<<<<<<< HEAD
+   existing_patient = db.query(models.Patient).filter(models.Patient.email == patient_in.email).first()
+   if existing_patient:
+        raise HTTPException(
+            status_code=400, 
+            detail="A patient with this email already exists."
+        )
+   new_patient = models.Patient(
+       first_name=patient_in.first_name,
+       last_name=patient_in.last_name,
+       date_of_birth=patient_in.date_of_birth,
+       gender=patient_in.gender,
+       phone_number=patient_in.phone_number,
+       email=patient_in.email,
+       address=patient_in.address,
+       referring_physician=patient_in.referring_physician,
+       doctor_id=current_user.id
+=======
 
     # make email reqiered and check if patient exists or not in the db for validation
     
@@ -109,16 +138,21 @@ def add_patient(
         age=patient_in.age,
         gender=patient_in.gender,
         doctor_id=current_user.id  
+>>>>>>> e7e7a42a3780b4fed94f2ff60f490159dc72e640
     )
     
    
-    db.add(new_patient)
-    db.commit()
+   db.add(new_patient)
+   db.commit()
     
    
-    db.refresh(new_patient)
+   db.refresh(new_patient)
     
-    return new_patient
+   return{
+        "message": "Patient record created successfully",
+        "status": "success",
+        "data": new_patient
+    }
 
 @app.get("/patients", response_model=list[schemas.PatientResponse])
 def get_patients(
