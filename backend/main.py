@@ -62,6 +62,10 @@ def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     
     return {"message": f"{new_user.username} created successfully!"}
+
+    # forntfacingMessage:'created successfully'
+    # status: 201
+    # data: new_user.username
     
 @app.post("/login")
 def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
@@ -87,6 +91,18 @@ def add_patient(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
 ):
+
+    # make email reqiered and check if patient exists or not in the db for validation
+    
+    #  firstName: ['', Validators.required],
+    #   lastName: ['', Validators.required],
+    #   dateOfBirth: ['', Validators.required],
+    #   gender: ['', Validators.required],
+    #   referringPhysician: [''],
+    #   phone: [''],
+    #   email: ['', Validators.email,Validators.required],
+    #   address: [''],
+    #  });
    
     new_patient = models.Patient(
         full_name=patient_in.full_name,

@@ -41,5 +41,6 @@ class MedicalRecord(Base):
     doctor_notes = Column(Text)     
     
     scan_date = Column(DateTime, default=datetime.datetime.utcnow)
-    
+    # status
+     
     owner = relationship("Patient", back_populates="records")
