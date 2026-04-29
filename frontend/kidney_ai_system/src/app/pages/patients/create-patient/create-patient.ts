@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { PatientsApisService } from '../patients-apis-service';
 
 @Component({
   selector: 'app-create-patient',
@@ -12,25 +13,22 @@ import { Router } from '@angular/router';
 export class CreatePatient {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly patientsApisService = inject(PatientsApisService);
 
   loading = false;
 
   patientForm: FormGroup;
 
-  constructor() // private patientService: PatientService,
-  {
+  constructor() {
     this.patientForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
-      sex: ['', Validators.required],
-      patientId: ['', Validators.required],
+      gender: ['', Validators.required],
       referringPhysician: [''],
       phone: [''],
-      email: ['', Validators.email],
+      email: ['', [Validators.email, Validators.required]],
       address: [''],
-      notes: [''],
-      consent: [false, Validators.requiredTrue],
     });
   }
 
@@ -51,14 +49,14 @@ export class CreatePatient {
 
     this.loading = true;
 
-    // this.patientService.addPatient(this.patientForm.value).subscribe({
-    //   next: () => {
-    //     this.loading = false;
-    //     this.router.navigate(['/patients']);
-    //   },
-    //   error: () => {
-    //     this.loading = false;
-    //   },
-    // });
+    this.patientsApisService.createPatient(this.patientForm.value).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/patients']);
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 }

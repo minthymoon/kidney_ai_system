@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { PatientI } from '../interfaces/patients.interface';
 import { Router } from '@angular/router';
+import { PatientsApisService } from '../patients-apis-service';
 
 @Component({
   selector: 'app-all-patients',
@@ -8,8 +9,9 @@ import { Router } from '@angular/router';
   templateUrl: './all-patients.html',
   styleUrl: './all-patients.css',
 })
-export class AllPatients {
+export class AllPatients implements OnInit {
   private readonly router = inject(Router);
+  private readonly patientsApisService = inject(PatientsApisService);
 
   patients = signal<PatientI[]>([
     {
@@ -72,6 +74,21 @@ export class AllPatients {
     const start = (this.currentPage() - 1) * this.pageSize;
     return this.patients().slice(start, start + this.pageSize);
   });
+
+  ngOnInit(): void {
+    this.findAllPatients();
+  }
+
+  findAllPatients() {
+    this.patientsApisService.findAllPatients().subscribe({
+      next: (response) => {
+        console.log(response);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
 
   setPage(page: number) {
     if (page >= 1 && page <= this.totalPages()) {

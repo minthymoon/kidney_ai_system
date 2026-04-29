@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ScanI } from '../interfaces/scan.interface';
 import { PatientI } from '../interfaces/patients.interface';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PatientsApisService } from '../patients-apis-service';
 
 @Component({
   selector: 'app-patient-profile',
@@ -11,9 +13,18 @@ import { PatientI } from '../interfaces/patients.interface';
   templateUrl: './patient-profile.html',
   styleUrl: './patient-profile.css',
 })
-export class PatientProfile {
+export class PatientProfile implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly patientsApisService = inject(PatientsApisService);
+
+  private destroyRef = inject(DestroyRef);
+
+  private readonly PAGE_SIZE = 5;
   activeTab: 'scans' | 'demographics' = 'scans';
   searchQuery = '';
+
+  patientID = signal<string>('');
+  patientRes = signal<PatientI | null>(null);
 
   patient: PatientI = {
     id: 1,
@@ -24,7 +35,6 @@ export class PatientProfile {
     address: '123 Medical Way, Suite 100, City, State, ZIP',
   };
 
-  private readonly PAGE_SIZE = 5;
   currentPage = signal(1);
 
   private allScans: ScanI[] = [
@@ -96,6 +106,34 @@ export class PatientProfile {
   );
 
   entriesEnd = computed(() => Math.min(this.currentPage() * this.PAGE_SIZE, this.totalEntries()));
+
+  ngOnInit(): void {
+    this.getPatientFromRoute();
+  }
+
+  getPatientFromRoute() {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((paramMap) => {
+      const patientID = paramMap.get('patientID');
+      if (!patientID) {
+        console.error('No patient ID provided in route');
+      } else {
+        this.patientID.set(patientID);
+        this.findOnePatient(patientID);
+      }
+    });
+  }
+
+  findOnePatient(patientID: string) {
+    this.patientsApisService.findOnePatient(patientID).subscribe({
+      next: (findOneResponse) => {
+        // this.patientRes.set(findOneResponse.data);
+        console.log(findOneResponse);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
 
   setPage(page: number): void {
     if (page >= 1 && page <= this.totalPages()) {
