@@ -4,6 +4,8 @@ import { Home } from './pages/home/home';
 import { AllPatients } from './pages/patients/all-patients/all-patients';
 import { CreatePatient } from './pages/patients/create-patient/create-patient';
 import { PatientProfile } from './pages/patients/patient-profile/patient-profile';
+import { Login } from './pages/auth/login/login';
+import { Signup } from './pages/auth/signup/signup';
 
 export const routes: Routes = [
   {
@@ -16,4 +18,7 @@ export const routes: Routes = [
       { path: 'patient-profile/:patientID', component: PatientProfile, title: 'patient profile' },
     ],
   },
+  { path: 'auth/login', component: Login, title: 'Login' },
+  { path: 'auth/signup', component: Signup, title: 'Sign up' },
+  { path: '**', redirectTo: 'home' },
 ];

@@ -78,7 +78,7 @@
               <div class="field">
                 <label>Gender <span class="req">*</span></label>
                 <div class="select-wrap">
-                  <select formControlName="sex" [class.error]="isInvalid('sex')">
+                  <select formControlName="gender" [class.error]="isInvalid('gender')">
                     <option value="" disabled>Select gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -93,7 +93,7 @@
                     />
                   </svg>
                 </div>
-                <span class="err-msg" *ngIf="isInvalid('sex')">Please select a sex</span>
+                <span class="err-msg" *ngIf="isInvalid('gender')">Please select a gender</span>
               </div>
             </div>
           </div>
