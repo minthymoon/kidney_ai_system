@@ -1,0 +1,172 @@
+<div class="page-wrapper">
+  <div class="card">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="hero-text">
+        <h1>
+          Precision<br />Kidney<br />Analysis.
+          <span class="highlight">Powered by AI.</span>
+        </h1>
+        <p class="tagline">
+          Empowering clinicians with advanced artificial intelligence for rapid, accurate
+          interpretation of renal imaging.
+        </p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <strong>Upload Scans</strong>
+            <p>
+              Securely upload DICOM or standard image formats directly to our HIPAA-compliant
+              platform.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <strong>AI Processing</strong>
+            <p>
+              Our deep learning models analyze the imagery for anomalies, volume, and structural
+              integrity.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <strong>Review Results</strong>
+            <p>
+              Access detailed, annotated reports and confidence scores within minutes to support
+              your clinical decisions.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="form-container">
+        <div class="form-header">
+          <h2>Welcome Back</h2>
+          <p>Enter your clinical credentials to access the portal.</p>
+        </div>
+
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
+          <div class="field-group">
+            <label for="userName">User Name</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="2"
+                    y="4"
+                    width="20"
+                    height="16"
+                    rx="2"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                  />
+                  <path
+                    d="M2 8l10 6 10-6"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <input
+                [(ngModel)]="userName"
+                id="userName"
+                type="text"
+                name="userName"
+                placeholder="dr.smith"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="5"
+                    y="11"
+                    width="14"
+                    height="10"
+                    rx="2"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                  />
+                  <path
+                    d="M8 11V7a4 4 0 018 0v4"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                name="password"
+                [(ngModel)]="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-btn"
+                (click)="togglePassword()"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                @if (!showPassword) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                      stroke="#9ca3af"
+                      stroke-width="1.8"
+                    />
+                    <circle cx="12" cy="12" r="3" stroke="#9ca3af" stroke-width="1.8" />
+                  </svg>
+                }
+
+                @if (showPassword) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"
+                      stroke="#9ca3af"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" [class.loading]="isLoading">
+            @if (!isLoading) {
+              <span>Log In Securely →</span>
+            }
+            @if (isLoading) {
+              <span class="spinner-wrap"> <span class="spinner"></span> Authenticating… </span>
+            }
+          </button>
+        </form>
+
+        <div class="divider"><span>or</span></div>
+
+        <button type="button" class="btn-secondary" (click)="onCreateAccount()">
+          Create Clinical Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
