@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
@@ -30,9 +31,19 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+def create_access_token(user: models.User, expires_delta: Optional[timedelta]= None):
+    to_encode = {
+        "sub": user.username,
+        "id": user.id,
+        "email": user.email,
+    }
+
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+   # expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     # //TODO: add payload to token id ... ect 
     
     to_encode.update({"exp": expire})
@@ -43,7 +54,7 @@ def create_access_token(data: dict):
 #oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 oauth2_scheme = APIKeyHeader(name="Authorization")
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+def get_current_user(token: str = Depends(oauth2_scheme),):
     
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,19 +67,16 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         # check postman and learn it
         if token.startswith("Bearer "):
             token = token.replace("Bearer ", "")
-
-
         
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("id")
         username: str = payload.get("sub")
-        if username is None:
+#should we check if the doc gets deleted during which the token is?
+       # user = db.query(models.User).filter(models.User.id == user_id).first()
+
+        if user_id is None:
             raise credentials_exception
+        return {"id": user_id, "username":username}
+    
     except JWTError:
         raise credentials_exception
-
-     
-    user = db.query(models.User).filter(models.User.username == username).first()
-    if user is None:
-        raise credentials_exception
-    
-    return user 

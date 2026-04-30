@@ -94,11 +94,11 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
 
-    access_token = create_access_token(data={"sub": user.username})
+    access_token = create_access_token(user=user)
     
     return {
     
-         "message": "Patient record created successfully",
+        "message": "Patient record created successfully",
         "status": "success",
         "data": {"access_token": access_token,}
        
@@ -108,7 +108,7 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
 def add_patient(
     patient_in: schemas.PatientCreate, 
     db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
    existing_patient = db.query(models.Patient).filter(models.Patient.email == patient_in.email).first()
    if existing_patient:
@@ -125,7 +125,7 @@ def add_patient(
        email=patient_in.email,
        address=patient_in.address,
        referring_physician=patient_in.referring_physician,
-       doctor_id=current_user.id
+       doctor_id=current_user["id"]
     )
     
    
@@ -141,44 +141,52 @@ def add_patient(
         "data": new_patient
     }
 
-@app.get("/patients", response_model=list[schemas.PatientResponse])
+@app.get("/patients", response_model=schemas.StandardResponse[list[schemas.PatientResponse]])
 def get_patients(
     db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     
-    patients = db.query(models.Patient).filter(models.Patient.doctor_id == current_user.id).all()
+    patients = db.query(models.Patient).filter(models.Patient.doctor_id == current_user["id"]).all()
     
-    return patients
+    return {
+        "message": "Patients retrieved successfully",
+        "status": "success",
+        "data": patients
+    }
 
-@app.get("/patients/{patient_id}", response_model=schemas.PatientResponse)
+@app.get("/patients/{patient_id}", response_model=schemas.StandardResponse[schemas.PatientResponse])
 def get_one_patient(
     patient_id: int, 
     db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
    
     patient = db.query(models.Patient).filter(
         models.Patient.id == patient_id, 
-        models.Patient.doctor_id == current_user.id
+        models.Patient.doctor_id == current_user["id"]
     ).first()
 
    
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
         
-    return patient
+    return{
+        "message": "Patient details retrieved successfully",
+        "status": "success",
+        "data": patient
+    }
 
 @app.delete("/patients/{patient_id}")
 def delete_patient(
     patient_id: int, 
     db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
    
     patient = db.query(models.Patient).filter(
         models.Patient.id == patient_id, 
-        models.Patient.doctor_id == current_user.id
+        models.Patient.doctor_id == current_user["id"]
     ).first()
 
    
@@ -189,7 +197,11 @@ def delete_patient(
     db.delete(patient)
     db.commit()
 
-    return {"message": f"Patient {patient_id} deleted successfully"}
+    return {
+        "message": f"Patient with ID {patient_id} deleted successfully",
+        "status": "success",
+        "data": {"id": patient_id}
+        }
 
 
 # for this: when the doc clicks edit, the frontend fetches the getpatient and their id, and uses the data from there to fill the input boxes
@@ -199,12 +211,12 @@ def update_patient(
     patient_id: int, 
     patient_update: schemas.PatientUpdate, 
     db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
    
     db_patient = db.query(models.Patient).filter(
         models.Patient.id == patient_id, 
-        models.Patient.doctor_id == current_user.id
+        models.Patient.doctor_id == current_user["id"]
     ).first()
 
     if not db_patient:
@@ -219,4 +231,8 @@ def update_patient(
 
     db.commit()
     db.refresh(db_patient)
-    return db_patient
+    return {
+        "message": "Patient information updated successfully",
+        "status": "success",
+        "data": db_patient
+    }
