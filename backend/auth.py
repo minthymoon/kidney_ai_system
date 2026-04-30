@@ -42,9 +42,6 @@ def create_access_token(user: models.User, expires_delta: Optional[timedelta]= N
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-
-   # expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    # //TODO: add payload to token id ... ect 
     
     to_encode.update({"exp": expire})
     

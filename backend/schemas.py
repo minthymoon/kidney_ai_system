@@ -12,6 +12,16 @@ class UserCreate(BaseModel):
     email: EmailStr
     phone_number: str
 
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 class UserResponse(BaseModel):
     id: int
     username: str
@@ -26,6 +36,10 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
 
 
 class MedicalRecordCreate(BaseModel):

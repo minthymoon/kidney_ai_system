@@ -236,3 +236,70 @@ def update_patient(
         "status": "success",
         "data": db_patient
     }
+
+@app.get("/doctors/profile", response_model=schemas.StandardResponse[schemas.UserResponse])
+def get_full_doctor_profile(
+    db: Session = Depends(get_db), 
+    current_user: dict = Depends(get_current_user)
+):
+    doctor = db.query(models.User).filter(models.User.id == current_user["id"]).first()
+    
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+        
+    return {
+        "message": "Full doctor profile retrieved",
+        "status": "success",
+        "data": doctor
+    }
+
+@app.patch("/doctors/profile", response_model=schemas.StandardResponse[schemas.UserResponse])
+def update_doctor_profile(
+    user_update: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    update_data = user_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_user, key, value)
+
+    db.commit()
+    db.refresh(db_user)
+
+    return {
+        "message": "Profile updated successfully",
+        "status": "success",
+        "data": db_user
+    }
+
+@app.post("/doctors/change-password", response_model=schemas.StandardResponse[dict])
+def change_password(
+    pass_data: schemas.PasswordChange,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+
+    db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    if not verify_password(pass_data.old_password, db_user.password_hash):
+        raise HTTPException(
+            status_code=400, 
+            detail="Current password is incorrect"
+        )
+
+    db_user.password_hash = get_password_hash(pass_data.new_password)
+    db.commit()
+
+    return {
+        "message": "Password updated successfully",
+        "status": "success",
+        "data": {"username": db_user.username}
+    }
