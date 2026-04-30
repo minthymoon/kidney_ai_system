@@ -1,5 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile 
 from sqlalchemy.orm import Session
+import tensorflow as tf
+import torch
 from .database import engine, get_db
 from . import models as models
 from pydantic import BaseModel, Field
@@ -8,12 +10,14 @@ from datetime import datetime
 from typing import List, Optional
 from . import schemas
 from fastapi.middleware.cors import CORSMiddleware
+from .ai_service import predict_kidney_image, model
 
 models.Base.metadata.create_all(bind=engine)
 
 
 
 app = FastAPI()
+
 
 origins = [
     "http://localhost:4200",  
@@ -303,3 +307,33 @@ def change_password(
         "status": "success",
         "data": {"username": db_user.username}
     }
+
+@app.post("/analysis/predict-image", response_model=schemas.StandardResponse[dict])
+async def upload_kidney_image(
+    patient_id: int, 
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image (JPG/PNG)")
+
+
+    file_content = await file.read()
+
+    try:
+
+        prediction_result = predict_kidney_image(file_content, model)
+        
+        return {
+            "status": "success",
+            "message": "AI analysis completed successfully",
+            "data": {
+                "patient_id": patient_id,
+                "result": prediction_result["result"],
+                "confidence": prediction_result["confidence"]
+            }
+        }
+    except Exception as e:
+
+        raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
