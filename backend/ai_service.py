@@ -30,7 +30,7 @@ CLASS_NAMES = ["Cyst", "Normal", "Stone", "Tumor"]
 def predict_kidney_image(file_content, model):
     img = Image.open(io.BytesIO(file_content)).convert('RGB')
     
-    # EXACT same math as your Kaggle notebook
+ 
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
@@ -41,7 +41,6 @@ def predict_kidney_image(file_content, model):
     
     with torch.no_grad():
         outputs = model(img_tensor)
-        # Find the highest probability
         probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
         confidence, index = torch.max(probabilities, 0)
     

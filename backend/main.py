@@ -1,23 +1,24 @@
+import os
+
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile 
 from sqlalchemy.orm import Session
-import tensorflow as tf
-import torch
 from .database import engine, get_db
 from . import models as models
-from pydantic import BaseModel, Field
 from .auth import get_password_hash, verify_password, create_access_token, get_current_user
-from datetime import datetime
-from typing import List, Optional
 from . import schemas
 from fastapi.middleware.cors import CORSMiddleware
 from .ai_service import predict_kidney_image, model
+from fastapi.staticfiles import StaticFiles
 
 models.Base.metadata.create_all(bind=engine)
 
-
-
 app = FastAPI()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 origins = [
     "http://localhost:4200",  
@@ -308,32 +309,75 @@ def change_password(
         "data": {"username": db_user.username}
     }
 
-@app.post("/analysis/predict-image", response_model=schemas.StandardResponse[dict])
+@app.post("/analysis/predict-image", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def upload_kidney_image(
     patient_id: int, 
     file: UploadFile = File(...),
+    db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image (JPG/PNG)")
 
-
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    db_image_url = f"/uploads/{file.filename}"
     file_content = await file.read()
 
-    try:
+    with open(file_path, "wb") as buffer:
+        buffer.write(file_content)
 
+    try:
         prediction_result = predict_kidney_image(file_content, model)
+
+        doctor_id = current_user.get("id")
+        new_record = models.MedicalRecord(
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            image_url= db_image_url,
+            ai_prediction=prediction_result["result"],
+            confidence_score=float(prediction_result["confidence"].strip('%')) / 100,
+            doctor_notes=None
+        )
+        db.add(new_record)
+        db.commit()
+        db.refresh(new_record)
         
         return {
+            "message": "AI analysis completed and saved",
             "status": "success",
-            "message": "AI analysis completed successfully",
-            "data": {
-                "patient_id": patient_id,
-                "result": prediction_result["result"],
-                "confidence": prediction_result["confidence"]
-            }
+            "data": new_record
         }
     except Exception as e:
-
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
+    
+@app.put("/analysis/update-note/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
+async def add_doctor_note(
+    record_id: int, 
+    notes: str, 
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    
+    record = db.query(models.MedicalRecord).filter(models.MedicalRecord.id == record_id).first()
+    
+    if not record:
+        raise HTTPException(status_code=404, detail="Medical record not found")
+
+    doctor_id = current_user.get("id")
+    
+    if record.doctor_id != doctor_id:
+        raise HTTPException(
+            status_code=403, 
+            detail="You do not have permission to edit this record"
+        )
+
+    record.doctor_notes = notes
+    db.commit()
+    db.refresh(record)
+
+    return {
+        "message": "Doctor's note added successfully",
+        "status": "success",
+        "data": record
+    }
