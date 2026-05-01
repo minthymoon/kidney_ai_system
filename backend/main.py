@@ -344,7 +344,7 @@ async def upload_kidney_image(
         prediction_result = predict_kidney_image(file_content, model)
 
         new_record.ai_prediction = prediction_result["result"]
-        new_record.confidence_score = float(prediction_result["confidence"].strip('%')) / 100
+        new_record.confidence_score = float(prediction_result["confidence"].strip('%'))
         new_record.status = "successful" 
         
         db.commit()
