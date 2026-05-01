@@ -326,29 +326,39 @@ async def upload_kidney_image(
     with open(file_path, "wb") as buffer:
         buffer.write(file_content)
 
+    doctor_id = current_user.get("id")
+    new_record = models.MedicalRecord(
+        patient_id=patient_id,
+        doctor_id=doctor_id,
+        image_url=db_image_url,
+        status="pending", 
+        ai_prediction=None,
+        confidence_score=None,
+        doctor_notes=None
+    )
+    db.add(new_record)
+    db.commit()
+    db.refresh(new_record)
+
     try:
         prediction_result = predict_kidney_image(file_content, model)
 
-        doctor_id = current_user.get("id")
-        new_record = models.MedicalRecord(
-            patient_id=patient_id,
-            doctor_id=doctor_id,
-            image_url= db_image_url,
-            ai_prediction=prediction_result["result"],
-            confidence_score=float(prediction_result["confidence"].strip('%')) / 100,
-            doctor_notes=None
-        )
-        db.add(new_record)
+        new_record.ai_prediction = prediction_result["result"]
+        new_record.confidence_score = float(prediction_result["confidence"].strip('%')) / 100
+        new_record.status = "successful" 
+        
         db.commit()
         db.refresh(new_record)
-        
+
         return {
             "message": "AI analysis completed and saved",
             "status": "success",
             "data": new_record
         }
+
     except Exception as e:
-        db.rollback()
+        new_record.status = "failed"
+        db.commit()
         raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
     
 @app.put("/analysis/update-note/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])

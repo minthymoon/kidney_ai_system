@@ -52,6 +52,7 @@ class MedicalRecordResponse(MedicalRecordCreate):
     id: int
     scan_date: datetime
     image_url: Optional[str] = None
+    status: str
 
     class Config:
         from_attributes = True
@@ -71,8 +72,6 @@ class PatientResponse(PatientCreate):
     doctor_id: int
 
     records: list[MedicalRecordResponse] = []
-
-    age: Optional[int] = None
 
     class Config:
         from_attributes = True
