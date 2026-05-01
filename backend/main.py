@@ -103,7 +103,7 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
     
     return {
     
-        "message": "Patient record created successfully",
+        "message": "logged in successfully",
         "status": "success",
         "data": {"access_token": access_token,}
        
@@ -360,7 +360,6 @@ async def add_doctor_note(
 ):
     
     record = db.query(models.MedicalRecord).filter(models.MedicalRecord.id == record_id).first()
-    
     if not record:
         raise HTTPException(status_code=404, detail="Medical record not found")
 
@@ -380,4 +379,55 @@ async def add_doctor_note(
         "message": "Doctor's note added successfully",
         "status": "success",
         "data": record
+    }
+
+@app.get("/analysis/records", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
+async def get_medical_records(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    doctor_id = current_user.get("id")
+
+    records = db.query(models.MedicalRecord).filter(models.MedicalRecord.doctor_id == doctor_id).all()
+
+    return {
+        "message": f"Retrieved {len(records)} medical records",
+        "status": "success",
+        "data": records
+    }
+
+import os
+
+@app.delete("/analysis/records/{record_id}", response_model=schemas.StandardResponse[dict])
+async def delete_medical_record(
+    record_id: int, 
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    record = db.query(models.MedicalRecord).filter(models.MedicalRecord.id == record_id).first()
+    
+    if not record:
+        raise HTTPException(status_code=404, detail="Medical record not found")
+
+    doctor_id = current_user.get("id")
+    if record.doctor_id != doctor_id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    if record.image_url:
+        filename = record.image_url.split("/")[-1]
+        file_path = os.path.join(UPLOAD_DIR, filename)
+
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting physical file: {e}")
+
+    db.delete(record)
+    db.commit()
+
+    return {
+        "message": "Record and associated image deleted successfully",
+        "status": "success",
+        "data": {"id": record_id}
     }
