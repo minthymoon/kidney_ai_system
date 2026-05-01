@@ -391,17 +391,21 @@ async def add_doctor_note(
         "data": record
     }
 
-@app.get("/analysis/records", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
+@app.get("/analysis/records/patient/{patient_id}", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
 async def get_medical_records(
+    patient_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     doctor_id = current_user.get("id")
 
-    records = db.query(models.MedicalRecord).filter(models.MedicalRecord.doctor_id == doctor_id).all()
+    records = db.query(models.MedicalRecord).filter(
+        models.MedicalRecord.patient_id == patient_id,
+        models.MedicalRecord.doctor_id == doctor_id
+    ).all()
 
     return {
-        "message": f"Retrieved {len(records)} medical records",
+        "message": f"Retrieved {len(records)} medical records for patient {patient_id}",
         "status": "success",
         "data": records
     }
