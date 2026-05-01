@@ -445,3 +445,51 @@ async def delete_medical_record(
         "status": "success",
         "data": {"id": record_id}
     }
+
+from sqlalchemy.orm import Session
+
+@app.get("/dashboard/stats", response_model=schemas.StandardResponse[dict])
+async def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    doctor_id = current_user.get("id")
+
+    total_patients = db.query(models.Patient).filter(models.Patient.doctor_id == doctor_id).count()
+
+    total_scans = db.query(models.MedicalRecord).filter(models.MedicalRecord.doctor_id == doctor_id).count()
+
+    pending_scans = db.query(models.MedicalRecord).filter(
+        models.MedicalRecord.doctor_id == doctor_id,
+        models.MedicalRecord.status == "pending"
+    ).count()
+
+    query_result = db.query(models.MedicalRecord, models.Patient.first_name)\
+        .join(models.Patient, models.MedicalRecord.patient_id == models.Patient.id)\
+        .filter(models.MedicalRecord.doctor_id == doctor_id)\
+        .order_by(models.MedicalRecord.scan_date.desc())\
+        .limit(5).all()
+
+    recent_activity = []
+    for record, p_name in query_result:
+        recent_activity.append({
+            "id": record.id,
+            "patient_name": p_name,
+            "ai_prediction": record.ai_prediction,
+            "status": record.status,
+            "scan_date": record.scan_date,
+            "image_url": record.image_url
+        })
+
+    return {
+        "message": "Dashboard statistics retrieved",
+        "status": "success",
+        "data": {
+            "stats": {
+                "total_patients": total_patients,
+                "total_scans": total_scans,
+                "pending_scans": pending_scans
+            },
+            "recent_activity": recent_activity
+        }
+    }
