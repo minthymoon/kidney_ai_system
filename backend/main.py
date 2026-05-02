@@ -20,13 +20,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-origins = [
-    "http://localhost:4200",  
-    "http://127.0.0.1:4200", 
-]
+ 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,          
+    allow_origins=['*'],          
     allow_credentials=True,
     allow_methods=["*"],            
     allow_headers=["*"],
@@ -44,6 +41,12 @@ def root():
 @app.get("/test-db")
 def test_db(db: Session = Depends(get_db)):
     return {"status": "Database Connection Successful!"}
+
+
+# **********************************************************
+# ***************** auth   **************************
+# **********************************************************
+
 
 @app.post("/signup")
 def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -108,6 +111,12 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
         "data": {"access_token": access_token,}
        
     }
+
+
+# **********************************************************
+# *****************    patients          *******************
+# **********************************************************
+
 
 @app.post("/patients", response_model=schemas.StandardResponse[schemas.PatientResponse])
 def add_patient(
@@ -242,6 +251,12 @@ def update_patient(
         "data": db_patient
     }
 
+
+# **********************************************************
+# *****************    doctors          *******************
+# **********************************************************
+
+
 @app.get("/doctors/profile", response_model=schemas.StandardResponse[schemas.UserResponse])
 def get_full_doctor_profile(
     db: Session = Depends(get_db), 
@@ -309,6 +324,13 @@ def change_password(
         "data": {"username": db_user.username}
     }
 
+
+# **********************************************************
+# *****************    analysis          *******************
+# **********************************************************
+
+
+# POST
 @app.post("/analysis/predict-image", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def upload_kidney_image(
     patient_id: int, 
@@ -360,7 +382,9 @@ async def upload_kidney_image(
         new_record.status = "failed"
         db.commit()
         raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
-    
+
+
+ # PUT   
 @app.put("/analysis/update-note/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def add_doctor_note(
     record_id: int, 
@@ -391,6 +415,7 @@ async def add_doctor_note(
         "data": record
     }
 
+ # GET 
 @app.get("/analysis/records/patient/{patient_id}", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
 async def get_medical_records(
     patient_id: int,
@@ -410,8 +435,8 @@ async def get_medical_records(
         "data": records
     }
 
-import os
 
+ # DELETE 
 @app.delete("/analysis/records/{record_id}", response_model=schemas.StandardResponse[dict])
 async def delete_medical_record(
     record_id: int, 
