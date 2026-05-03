@@ -1,6 +1,7 @@
 import os
 
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .database import engine, get_db
 from . import models as models
@@ -220,7 +221,7 @@ def delete_patient(
 
 # for this: when the doc clicks edit, the frontend fetches the getpatient and their id, and uses the data from there to fill the input boxes
 # when the doctor saves they only send back the changes to the patch route, ok?
-@app.patch("/patients/{patient_id}", response_model=schemas.PatientResponse)
+@app.patch("/patients/{patient_id}", response_model=schemas.PatientUpdateResponse)
 def update_patient(
     patient_id: int, 
     patient_update: schemas.PatientUpdate, 
@@ -494,6 +495,19 @@ async def get_dashboard_stats(
         .filter(models.MedicalRecord.doctor_id == doctor_id)\
         .order_by(models.MedicalRecord.scan_date.desc())\
         .limit(5).all()
+    
+    diagnosis_counts = db.query(
+    models.MedicalRecord.ai_prediction, 
+    func.count(models.MedicalRecord.id)
+    ).filter(
+    models.MedicalRecord.doctor_id == doctor_id,
+    models.MedicalRecord.status == "successful" 
+    ).group_by(models.MedicalRecord.ai_prediction).all()
+
+    chart_data = [
+    {"label": pred if pred else "Normal", "value": count} 
+    for pred, count in diagnosis_counts
+]
 
     recent_activity = []
     for record, p_name in query_result:
@@ -515,6 +529,7 @@ async def get_dashboard_stats(
                 "total_scans": total_scans,
                 "pending_scans": pending_scans
             },
+            "chart_data": chart_data,
             "recent_activity": recent_activity
         }
     }
