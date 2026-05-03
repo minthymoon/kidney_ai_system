@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ScanI } from '../patients/interfaces/scan.interface';
+import { HomeApisService } from './home-apis-service';
 
 @Component({
   selector: 'app-home',
@@ -8,12 +9,13 @@ import { ScanI } from '../patients/interfaces/scan.interface';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home {
+export class Home implements OnInit {
+  private readonly homeApisService = inject(HomeApisService);
+
   stats = [
     {
       label: 'Total Patients',
       value: 4821,
-      change: '+12% this month',
       changeType: 'positive',
       icon: 'patients',
       accent: 'teal',
@@ -21,7 +23,6 @@ export class Home {
     {
       label: 'Total Scans',
       value: 18374,
-      change: '1,203 this week',
       changeType: 'neutral',
       icon: 'scans',
       accent: 'blue',
@@ -29,7 +30,6 @@ export class Home {
     {
       label: 'Pending Scans',
       value: 37,
-      change: 'Oldest: 2h ago',
       changeType: 'warning',
       icon: 'pending',
       accent: 'amber',
@@ -37,51 +37,30 @@ export class Home {
   ];
 
   currentPage = signal(1);
+  total_patients = signal(0);
+  total_scans = signal(0);
+  pending_scans = signal(0);
   private readonly PAGE_SIZE = 5;
   searchQuery = '';
 
-  private allScans: ScanI[] = [
-    {
-      id: 1,
-      date: 'Oct 12, 2025',
-      time: '14:30 PM',
-      type: 'Kidney X-Ray (AP)',
-      status: 'Completed',
-      finding: 'Normal contour, no visible calculi or...',
-    },
-    {
-      id: 2,
-      date: 'Sep 28, 2025',
-      time: '09:15 AM',
-      type: 'Renal Ultrasound',
-      status: 'Canceled',
-      finding: 'Possible 4mm calculus in lower pol...',
-    },
-    {
-      id: 3,
-      date: 'Jul 15, 2025',
-      time: '11:00 AM',
-      type: 'Kidney X-Ray (AP)',
-      status: 'Pending',
-      finding: 'Analysis in progress...',
-    },
-    {
-      id: 4,
-      date: 'May 03, 2025',
-      time: '08:45 AM',
-      type: 'Renal Ultrasound',
-      status: 'Completed',
-      finding: 'No hydronephrosis detected.',
-    },
-    {
-      id: 5,
-      date: 'Feb 18, 2025',
-      time: '13:00 PM',
-      type: 'Kidney X-Ray (AP)',
-      status: 'Completed',
-      finding: 'Mild cortical thinning noted.',
-    },
-  ];
+  private allScans: ScanI[] = [];
+
+  ngOnInit(): void {
+    this.findAllStats();
+  }
+
+  findAllStats() {
+    this.homeApisService.findAllStats().subscribe({
+      next: (response) => {
+        this.total_patients.set(response.data.stats.total_patients);
+        this.total_scans.set(response.data.stats.total_scans);
+        this.pending_scans.set(response.data.stats.pending_scans);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
 
   filteredScans = computed(() => {
     const q = this.searchQuery.toLowerCase();

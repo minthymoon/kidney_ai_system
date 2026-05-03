@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { PatientI } from '../interfaces/patients.interface';
 import { Router } from '@angular/router';
 import { PatientsApisService } from '../patients-apis-service';
+import { FindAllPatientsResponseI } from '../interfaces/find-all-patients-response.interface';
 
 @Component({
   selector: 'app-all-patients',
@@ -13,66 +13,26 @@ export class AllPatients implements OnInit {
   private readonly router = inject(Router);
   private readonly patientsApisService = inject(PatientsApisService);
 
-  patients = signal<PatientI[]>([
-    {
-      id: 1,
-      full_name: 'Jane Doe',
-      age: 28,
-      gender: 'Female',
-      phone_number: '0791111111',
-      doctor_id: 'D1',
-    },
-    {
-      id: 2,
-      full_name: 'Robert Johnson',
-      age: 45,
-      gender: 'Male',
-      phone_number: '0792222222',
-      doctor_id: 'D1',
-    },
-    {
-      id: 3,
-      full_name: 'Michael Smith',
-      age: 36,
-      gender: 'Male',
-      phone_number: '0793333333',
-      doctor_id: 'D2',
-    },
-    {
-      id: 4,
-      full_name: 'Amanda Lee',
-      age: 50,
-      gender: 'Female',
-      phone_number: '0794444444',
-      doctor_id: 'D2',
-    },
-    {
-      id: 5,
-      full_name: 'Ahmad Ali',
-      age: 40,
-      gender: 'Male',
-      phone_number: '0795555555',
-      doctor_id: 'D3',
-    },
-    {
-      id: 6,
-      full_name: 'Sara Khaled',
-      age: 31,
-      gender: 'Female',
-      phone_number: '0796666666',
-      doctor_id: 'D3',
-    },
-  ]);
+  patients = signal<FindAllPatientsResponseI[]>([]);
 
-  // Pagination
   pageSize = 4;
   currentPage = signal(1);
+  searchQuery = signal('');
 
-  totalPages = computed(() => Math.ceil(this.patients().length / this.pageSize));
+  filteredPatients = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.patients();
+
+    return this.patients().filter(
+      (p) => p.first_name.toLowerCase().includes(query) || p.email?.toLowerCase().includes(query),
+    );
+  });
+
+  totalPages = computed(() => Math.ceil(this.filteredPatients().length / this.pageSize));
 
   paginatedPatients = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize;
-    return this.patients().slice(start, start + this.pageSize);
+    return this.filteredPatients().slice(start, start + this.pageSize);
   });
 
   ngOnInit(): void {
@@ -82,12 +42,17 @@ export class AllPatients implements OnInit {
   findAllPatients() {
     this.patientsApisService.findAllPatients().subscribe({
       next: (response) => {
-        console.log(response);
+        this.patients.set(response.data);
       },
       error: (err) => {
         console.error(err);
       },
     });
+  }
+
+  onSearch(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+    this.currentPage.set(1);
   }
 
   setPage(page: number) {
@@ -96,7 +61,7 @@ export class AllPatients implements OnInit {
     }
   }
 
-  goToProfile(patient: PatientI) {
+  goToProfile(patient: FindAllPatientsResponseI) {
     this.router.navigate([`patient-profile/${patient.id}`]);
   }
 

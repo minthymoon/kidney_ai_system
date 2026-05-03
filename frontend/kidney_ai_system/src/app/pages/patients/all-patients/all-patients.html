@@ -8,8 +8,11 @@
       </div>
     </div>
     <div class="add-btn">
-      <input class="search" placeholder="Search patient ID or name..." />
-
+      <input
+        class="search"
+        placeholder="Search patient name or email..."
+        (input)="onSearch($event)"
+      />
       <button (click)="goToCreatePatient()" class="btn">+ Add patient</button>
     </div>
 
@@ -19,7 +22,7 @@
         <thead>
           <tr>
             <th>Patient Info</th>
-            <th>Age</th>
+            <th>Date of birth</th>
             <th>Gender</th>
             <th>Phone</th>
             <th>Actions</th>
@@ -31,16 +34,16 @@
             <tr>
               <td class="patient-info">
                 <div class="avatar">
-                  {{ patient.full_name.charAt(0) }}
+                  {{ patient.first_name.charAt(0) }}
                 </div>
 
                 <div>
-                  <strong>{{ patient.full_name }}</strong>
+                  <strong>{{ patient.first_name }} {{ patient.last_name }} </strong>
                   <p>ID: PT-{{ patient.id }}</p>
                 </div>
               </td>
 
-              <td>{{ patient.age }}</td>
+              <td>{{ patient.date_of_birth }}</td>
               <td>{{ patient.gender }}</td>
               <td>{{ patient.phone_number }}</td>
 

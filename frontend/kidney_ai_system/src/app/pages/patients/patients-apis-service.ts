@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Apis } from '../../core/services/apis/apis';
 import { CreatePatientDto } from './dtos/create-patient.dto';
 import { FilterPatientsDto } from './dtos/filter-patients.dto';
-import { PatientI } from './interfaces/patients.interface';
+import { FindAllPatientsResponseI } from './interfaces/find-all-patients-response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -14,11 +14,15 @@ export class PatientsApisService {
     return this.apis.post('patients', createPatientDto);
   }
 
+  updatePatient(patientID: string, createPatientDto: CreatePatientDto) {
+    return this.apis.patch(`patients/${patientID}`, createPatientDto);
+  }
+
   findAllPatients(filterPatientsDto?: FilterPatientsDto) {
-    return this.apis.get('patients', filterPatientsDto);
+    return this.apis.get<FindAllPatientsResponseI[]>('patients', filterPatientsDto);
   }
 
   findOnePatient(patientID: string) {
-    return this.apis.get<PatientI>(`patients/${patientID}`);
+    return this.apis.get<FindAllPatientsResponseI>(`patients/${patientID}`);
   }
 }

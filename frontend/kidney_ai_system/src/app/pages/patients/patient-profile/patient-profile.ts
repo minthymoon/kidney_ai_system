@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ScanI } from '../interfaces/scan.interface';
 import { PatientI } from '../interfaces/patients.interface';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientsApisService } from '../patients-apis-service';
+import { FindAllPatientsResponseI } from '../interfaces/find-all-patients-response.interface';
 
 @Component({
   selector: 'app-patient-profile',
@@ -15,6 +16,7 @@ import { PatientsApisService } from '../patients-apis-service';
 })
 export class PatientProfile implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly patientsApisService = inject(PatientsApisService);
 
   private destroyRef = inject(DestroyRef);
@@ -26,59 +28,11 @@ export class PatientProfile implements OnInit {
   patientID = signal<string>('');
   patientRes = signal<PatientI | null>(null);
 
-  patient: PatientI = {
-    id: 1,
-    full_name: 'Jane Doe',
-    gender: 'Female',
-    phone_number: '(555) 012-3456',
-    email: 'jane.doe@example.com',
-    address: '123 Medical Way, Suite 100, City, State, ZIP',
-  };
+  patient = signal<FindAllPatientsResponseI | null>(null);
 
   currentPage = signal(1);
 
-  private allScans: ScanI[] = [
-    {
-      id: 1,
-      date: 'Oct 12, 2025',
-      time: '14:30 PM',
-      type: 'Kidney X-Ray (AP)',
-      status: 'Completed',
-      finding: 'Normal contour, no visible calculi or...',
-    },
-    {
-      id: 2,
-      date: 'Sep 28, 2025',
-      time: '09:15 AM',
-      type: 'Renal Ultrasound',
-      status: 'Canceled',
-      finding: 'Possible 4mm calculus in lower pol...',
-    },
-    {
-      id: 3,
-      date: 'Jul 15, 2025',
-      time: '11:00 AM',
-      type: 'Kidney X-Ray (AP)',
-      status: 'Pending',
-      finding: 'Analysis in progress...',
-    },
-    {
-      id: 4,
-      date: 'May 03, 2025',
-      time: '08:45 AM',
-      type: 'Renal Ultrasound',
-      status: 'Completed',
-      finding: 'No hydronephrosis detected.',
-    },
-    {
-      id: 5,
-      date: 'Feb 18, 2025',
-      time: '13:00 PM',
-      type: 'Kidney X-Ray (AP)',
-      status: 'Completed',
-      finding: 'Mild cortical thinning noted.',
-    },
-  ];
+  private allScans: ScanI[] = [];
 
   filteredScans = computed(() => {
     const q = this.searchQuery.toLowerCase();
@@ -123,11 +77,14 @@ export class PatientProfile implements OnInit {
     });
   }
 
+  goToUpdate() {
+    this.router.navigate([`update-patient/${this.patient()?.id!}`]);
+  }
+
   findOnePatient(patientID: string) {
     this.patientsApisService.findOnePatient(patientID).subscribe({
       next: (findOneResponse) => {
-        // this.patientRes.set(findOneResponse.data);
-        console.log(findOneResponse);
+        this.patient.set(findOneResponse.data);
       },
       error: (err) => {
         console.error(err);
@@ -142,11 +99,6 @@ export class PatientProfile implements OnInit {
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name?.toUpperCase().slice(0, 2);
   }
 }

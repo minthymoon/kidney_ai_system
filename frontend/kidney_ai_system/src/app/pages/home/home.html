@@ -31,7 +31,7 @@
       </div>
       <div>
         <div class="card-label">Total Patients</div>
-        <div class="card-value">{{ stats[0].value | number }}</div>
+        <div class="card-value">{{ total_patients() }}</div>
       </div>
     </div>
 
@@ -58,7 +58,7 @@
       </div>
       <div>
         <div class="card-label">Total Scans</div>
-        <div class="card-value">{{ stats[1].value | number }}</div>
+        <div class="card-value">{{ total_scans() }}</div>
       </div>
     </div>
 
@@ -84,7 +84,7 @@
       </div>
       <div>
         <div class="card-label">Pending Scans</div>
-        <div class="card-value">{{ stats[2].value }}</div>
+        <div class="card-value">{{ pending_scans() }}</div>
       </div>
     </div>
   </div>
