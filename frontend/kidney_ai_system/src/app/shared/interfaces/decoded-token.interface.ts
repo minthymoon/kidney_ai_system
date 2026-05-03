@@ -1,6 +1,6 @@
 export interface DecodedTokenI {
-  iat: number;
+  email: string;
   exp: number;
   sub: string;
-  role: number;
+  id: string;
 }
