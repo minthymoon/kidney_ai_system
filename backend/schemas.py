@@ -86,6 +86,11 @@ class PatientUpdate(BaseModel):
     address: Optional[str] = None
     referring_physician: Optional[str] = None
 
+class PatientUpdateResponse(BaseModel):
+    message: str
+    status: str
+    data: PatientResponse
+
 class StandardResponse(BaseModel, Generic[T]):
     message: str
     status: str 
@@ -93,3 +98,7 @@ class StandardResponse(BaseModel, Generic[T]):
 
     class Config:
         from_attributes = True
+
+class ChartData(BaseModel):
+    label: str
+    value: int
