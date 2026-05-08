@@ -3,6 +3,8 @@ import { Apis } from '../../core/services/apis/apis';
 import { CreatePatientDto } from './dtos/create-patient.dto';
 import { FilterPatientsDto } from './dtos/filter-patients.dto';
 import { FindAllPatientsResponseI } from './interfaces/find-all-patients-response.interface';
+import { CreateScanDto } from './dtos/create-scan.dto';
+import { ScanResponseI } from './interfaces/scan-response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +14,10 @@ export class PatientsApisService {
 
   createPatient(createPatientDto: CreatePatientDto) {
     return this.apis.post('patients', createPatientDto);
+  }
+
+  createScan(createScanDto: CreateScanDto) {
+    return this.apis.post<ScanResponseI>('analysis/predict-image', createScanDto);
   }
 
   updatePatient(patientID: string, createPatientDto: CreatePatientDto) {

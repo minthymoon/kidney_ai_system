@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ScanI } from '../patients/interfaces/scan.interface';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { HomeApisService } from './home-apis-service';
+import { recentActivityI } from './interfaces/stats.interface';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -40,10 +40,8 @@ export class Home implements OnInit {
   total_patients = signal(0);
   total_scans = signal(0);
   pending_scans = signal(0);
-  private readonly PAGE_SIZE = 5;
-  searchQuery = '';
 
-  private allScans: ScanI[] = [];
+  allScans = signal<recentActivityI[]>([]);
 
   ngOnInit(): void {
     this.findAllStats();
@@ -55,6 +53,7 @@ export class Home implements OnInit {
         this.total_patients.set(response.data.stats.total_patients);
         this.total_scans.set(response.data.stats.total_scans);
         this.pending_scans.set(response.data.stats.pending_scans);
+        this.allScans.set(response.data.recent_activity);
       },
       error: (err) => {
         console.error(err);
@@ -62,18 +61,18 @@ export class Home implements OnInit {
     });
   }
 
-  filteredScans = computed(() => {
-    const q = this.searchQuery.toLowerCase();
-    const filtered = q
-      ? this.allScans.filter(
-          (s) =>
-            s.type.toLowerCase().includes(q) ||
-            s.status.toLowerCase().includes(q) ||
-            s.finding.toLowerCase().includes(q),
-        )
-      : this.allScans;
+  // filteredScans = computed(() => {
+  //   const q = this.searchQuery.toLowerCase();
+  //   const filtered = q
+  //     ? this.allScans.filter(
+  //         (s) =>
+  //           s.type.toLowerCase().includes(q) ||
+  //           s.status.toLowerCase().includes(q) ||
+  //           s.finding.toLowerCase().includes(q),
+  //       )
+  //     : this.allScans;
 
-    const start = (this.currentPage() - 1) * this.PAGE_SIZE;
-    return filtered.slice(start, start + this.PAGE_SIZE);
-  });
+  //   const start = (this.currentPage() - 1) * this.PAGE_SIZE;
+  //   return filtered.slice(start, start + this.PAGE_SIZE);
+  // });
 }

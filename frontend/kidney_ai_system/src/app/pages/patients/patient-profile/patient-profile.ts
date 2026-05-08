@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ScanI } from '../interfaces/scan.interface';
 import { PatientI } from '../interfaces/patients.interface';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PatientsApisService } from '../patients-apis-service';
 import { FindAllPatientsResponseI } from '../interfaces/find-all-patients-response.interface';
+import { recentActivityI } from '../../home/interfaces/stats.interface';
 
 @Component({
   selector: 'app-patient-profile',
@@ -32,18 +32,10 @@ export class PatientProfile implements OnInit {
 
   currentPage = signal(1);
 
-  private allScans: ScanI[] = [];
+  allScans = signal<recentActivityI[]>([]);
 
   filteredScans = computed(() => {
-    const q = this.searchQuery.toLowerCase();
-    const filtered = q
-      ? this.allScans.filter(
-          (s) =>
-            s.type.toLowerCase().includes(q) ||
-            s.status.toLowerCase().includes(q) ||
-            s.finding.toLowerCase().includes(q),
-        )
-      : this.allScans;
+    const filtered = this.allScans();
 
     const start = (this.currentPage() - 1) * this.PAGE_SIZE;
     return filtered.slice(start, start + this.PAGE_SIZE);
@@ -85,6 +77,7 @@ export class PatientProfile implements OnInit {
     this.patientsApisService.findOnePatient(patientID).subscribe({
       next: (findOneResponse) => {
         this.patient.set(findOneResponse.data);
+        this.allScans.set(findOneResponse.data.records);
       },
       error: (err) => {
         console.error(err);
@@ -100,5 +93,9 @@ export class PatientProfile implements OnInit {
 
   getInitials(name: string): string {
     return name?.toUpperCase().slice(0, 2);
+  }
+
+  createScan() {
+    this.router.navigate([`scan-page/${this.patient()?.id!}`]);
   }
 }

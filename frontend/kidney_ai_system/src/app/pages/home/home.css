@@ -197,7 +197,12 @@ tbody tr:hover {
   width: 28px;
   height: 28px;
   background: #dbeafe;
-  border-radius: 6px;
+  color: #2563eb;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* Status */

@@ -1,3 +1,5 @@
+import { recentActivityI } from '../../home/interfaces/stats.interface';
+
 export interface FindAllPatientsResponseI {
   first_name: string;
   last_name: string;
@@ -9,4 +11,5 @@ export interface FindAllPatientsResponseI {
   email?: string;
   address?: string;
   doctor_id?: string;
+  records: recentActivityI[];
 }

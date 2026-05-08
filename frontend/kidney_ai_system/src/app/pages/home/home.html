@@ -100,26 +100,49 @@
       <table>
         <thead>
           <tr>
-            <th>Date & Time</th>
-            <th>Scan Type</th>
+            <th>Date</th>
+            <th>Patient</th>
+            <th>AI prediction</th>
             <th>Status</th>
-            <th>Summary Finding</th>
+            <!-- <th>Summary Finding</th> -->
             <th>Action</th>
           </tr>
         </thead>
 
         <tbody>
-          @for (scan of filteredScans(); track scan.id) {
+          @for (scan of allScans(); track scan.id) {
             <tr>
               <td class="td-date">
-                <span class="date">{{ scan.date }}</span>
-                <span class="time">{{ scan.time }}</span>
+                <span class="date">{{ scan.scan_date | date }}</span>
+                <!-- <span class="time">{{ scan.time }}</span> -->
+              </td>
+
+              <td class="td-finding">
+                <span>
+                  {{ scan.patient_name }}
+                </span>
               </td>
 
               <td>
                 <div class="scan-type-cell">
-                  <div class="scan-icon"></div>
-                  {{ scan.type }}
+                  <div class="scan-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                  </div>
+                  {{ scan.ai_prediction }}
                 </div>
               </td>
 
@@ -129,12 +152,6 @@
                   [class]="'scan-status-' + scan.status.toLowerCase().replace(' ', '-')"
                 >
                   {{ scan.status }}
-                </span>
-              </td>
-
-              <td class="td-finding">
-                <span [class.pending-text]="scan.status === 'pending'">
-                  {{ scan.finding }}
                 </span>
               </td>
 

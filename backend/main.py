@@ -10,6 +10,7 @@ from . import schemas
 from fastapi.middleware.cors import CORSMiddleware
 from .ai_service import predict_kidney_image, model
 from fastapi.staticfiles import StaticFiles
+from fastapi import Form
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -334,11 +335,12 @@ def change_password(
 # POST
 @app.post("/analysis/predict-image", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def upload_kidney_image(
-    patient_id: int, 
+    patient_id: int = Form(...) , 
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    print(f"Received file: {file.filename}, content type: {file.content_type}")
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image (JPG/PNG)")
 

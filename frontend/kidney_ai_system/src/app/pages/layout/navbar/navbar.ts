@@ -16,10 +16,13 @@ export class Navbar implements OnInit {
   isDropdownOpen = false;
   isMobileMenuOpen = false;
   userEmail = signal<string | null>(null);
+  userName = signal<string | null>(null);
 
   ngOnInit(): void {
     const email = this.getEmailFromToken(this.storageService.accessToken!);
+    const name = this.getNameFromToken(this.storageService.accessToken!);
     this.userEmail.set(email);
+    this.userName.set(name);
   }
 
   toggleDropdown(): void {
@@ -31,6 +34,16 @@ export class Navbar implements OnInit {
       const payload = token.split('.')[1];
       const decoded = JSON.parse(atob(payload));
       return decoded.email ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  getNameFromToken(token: string): string | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.name ?? null;
     } catch {
       return null;
     }

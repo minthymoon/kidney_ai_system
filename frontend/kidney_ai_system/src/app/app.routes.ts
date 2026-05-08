@@ -11,6 +11,7 @@ import { authenticationGuard } from './core/guards/authentication-guard';
 import { NotFound } from './pages/error-pages/not-found/not-found';
 import { Unauthorized } from './pages/error-pages/unauthorized/unauthorized';
 import { Profile } from './pages/profile/profile';
+import { ScanPage } from './pages/patients/scan-page/scan-page';
 
 export const routes: Routes = [
   {
@@ -24,6 +25,7 @@ export const routes: Routes = [
       { path: 'create-patient', component: CreatePatient, title: 'Create patient' },
       { path: 'update-patient/:patientID', component: UpdatePatient, title: 'Update patient' },
       { path: 'patient-profile/:patientID', component: PatientProfile, title: 'Patient profile' },
+      { path: 'scan-page/:patientID', component: ScanPage, title: 'Scan page' },
     ],
   },
   {

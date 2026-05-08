@@ -33,7 +33,7 @@ def verify_password(plain_password, hashed_password):
 
 def create_access_token(user: models.User, expires_delta: Optional[timedelta]= None):
     to_encode = {
-        "sub": user.username,
+        "name": user.first_name + " " + user.last_name,
         "id": user.id,
         "email": user.email,
     }
@@ -67,13 +67,13 @@ def get_current_user(token: str = Depends(oauth2_scheme),):
         
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("id")
-        username: str = payload.get("sub")
+        name: str = payload.get("name")
 #should we check if the doc gets deleted during which the token is?
        # user = db.query(models.User).filter(models.User.id == user_id).first()
 
         if user_id is None:
             raise credentials_exception
-        return {"id": user_id, "username":username}
+        return {"id": user_id, "name": name}
     
     except JWTError:
         raise credentials_exception
