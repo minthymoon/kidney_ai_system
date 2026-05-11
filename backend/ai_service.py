@@ -7,50 +7,60 @@ from PIL import Image
 import io
 import os
 
-model = models.resnet18()
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 4)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "kidney_model.pth")
+IMG_SIZE    = 528
+CLASS_NAMES = ["Cyst", "Normal", "Stone", "Tumor"]
+
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model_traning_phase1.h5")
+
+model = None
 
 def load_trained_model():
+    global model
     if os.path.exists(MODEL_PATH):
-        model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
-        model.eval()
-        print("✅ PyTorch Kidney Model loaded successfully!")
+        model = tf.keras.models.load_model(MODEL_PATH)
+        model_summary = f"Input: {model.input_shape}, Output: {model.output_shape}"
+        print(f"✅ TensorFlow Kidney Model loaded successfully! ({model_summary})")
     else:
         print(f"⚠️ Warning: {MODEL_PATH} not found in backend folder yet.")
 
 load_trained_model()
 
+def preprocess_image(file_content: bytes) -> np.ndarray:
+    """
+    Accepts raw image bytes.
+    Returns a batched float32 array of shape (1, 528, 528, 3).
+    NOTE: Do NOT normalize to [0,1] — EfficientNetB6 handles
+    its own normalization internally. Pass raw [0, 255] values.
+    """
+    img = Image.open(io.BytesIO(file_content)).convert("RGB")
+    img = img.resize((IMG_SIZE, IMG_SIZE))
+    arr = np.array(img, dtype=np.float32)
+    arr = np.expand_dims(arr, axis=0)
+    return arr
 
-CLASS_NAMES = ["Cyst", "Normal", "Stone", "Tumor"]
+def predict_kidney_image(file_content: bytes, _model=None):
+    """
+    Drop-in replacement for the old predict_kidney_image().
+    _model param kept for signature compatibility but ignored
+    (model is loaded globally above).
+    """
+    if model is None:
+        raise RuntimeError("Model is not loaded. Check that model_traning_phase1.h5 exists.")
 
-def predict_kidney_image(file_content, model):
-    img = Image.open(io.BytesIO(file_content)).convert('RGB')
-    
- 
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-    
-    img_tensor = transform(img).unsqueeze(0)
-    
-    with torch.no_grad():
-        outputs = model(img_tensor)
-        probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
-        confidence, index = torch.max(probabilities, 0)
-    
+    img_tensor = preprocess_image(file_content)
+
+    probs = model.predict(img_tensor, verbose=0)[0]
+    index = int(np.argmax(probs))
+    confidence = float(probs[index])
+
     return {
-        "result": CLASS_NAMES[index],
-        "confidence": f"{confidence.item() * 100:.2f}%"
+        "result":      CLASS_NAMES[index],
+        "confidence":  f"{confidence * 100:.2f}%"
     }
-# this is to check really and will only run if the file is run directly by name
+
 if __name__ == "__main__":
-  
     print(f"Model successfully loaded from: {MODEL_PATH}")
     print(f"Categories recognized: {CLASS_NAMES}")
     print("STATUS: READY FOR PREDICTIONS 🚀")
