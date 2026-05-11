@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile 
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .database import engine, get_db
@@ -422,6 +422,7 @@ async def add_doctor_note(
 @app.get("/analysis/records/patient/{patient_id}", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
 async def get_medical_records(
     patient_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -431,6 +432,11 @@ async def get_medical_records(
         models.MedicalRecord.patient_id == patient_id,
         models.MedicalRecord.doctor_id == doctor_id
     ).all()
+
+    base_url = str(request.base_url).rstrip("/")
+    for rec in records:
+        if rec.image_url and not rec.image_url.startswith("http"):
+            rec.image_url = f"{base_url}{rec.image_url}"
 
     return {
         "message": f"Retrieved {len(records)} medical records for patient {patient_id}",
@@ -479,6 +485,7 @@ async def delete_medical_record(
 @app.get("/analysis/records/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def get_single_medical_record(
     record_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -491,6 +498,10 @@ async def get_single_medical_record(
     if record.doctor_id != doctor_id:
         raise HTTPException(status_code=403, detail="Permission denied")
     
+    base_url = str(request.base_url).rstrip("/")
+    if record.image_url and not record.image_url.startswith("http"):
+        record.image_url = f"{base_url}{record.image_url}"
+
     return {
         "message": "Medical record retrieved successfully",
         "status": "success",
@@ -501,6 +512,7 @@ async def get_single_medical_record(
 # GET ALL RECORDS
 @app.get("/analysis/records", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
 async def get_all_doctor_records(
+    request: Request,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -510,6 +522,12 @@ async def get_all_doctor_records(
         .filter(models.MedicalRecord.doctor_id == doctor_id)\
         .order_by(models.MedicalRecord.id.desc())\
         .all()
+    
+    base_url = str(request.base_url).rstrip("/")
+    
+    for record in records:
+        if record.image_url and not record.image_url.startswith("http"):
+            record.image_url = f"{base_url}{record.image_url}"
     
     return {
         "message": f"Retrieved {len(records)} total records",
