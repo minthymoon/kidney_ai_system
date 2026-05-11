@@ -76,6 +76,13 @@ class PatientResponse(PatientCreate):
     class Config:
         from_attributes = True
 
+class PatientListResponse(PatientCreate): #no returning records with patients :)
+    id: int
+    doctor_id: int
+
+    class Config:
+        from_attributes = True
+
 class PatientUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None

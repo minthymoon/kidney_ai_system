@@ -157,7 +157,7 @@ def add_patient(
         "data": new_patient
     }
 
-@app.get("/patients", response_model=schemas.StandardResponse[list[schemas.PatientResponse]])
+@app.get("/patients", response_model=schemas.StandardResponse[list[schemas.PatientListResponse]])
 def get_patients(
     db: Session = Depends(get_db), 
     current_user: dict = Depends(get_current_user)
@@ -387,7 +387,7 @@ async def upload_kidney_image(
         raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
 
 
- # PUT   
+ # PUT
 @app.put("/analysis/update-note/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def add_doctor_note(
     record_id: int, 
@@ -418,7 +418,7 @@ async def add_doctor_note(
         "data": record
     }
 
- # GET 
+ # GET PATIENT RECORDS
 @app.get("/analysis/records/patient/{patient_id}", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
 async def get_medical_records(
     patient_id: int,
@@ -439,7 +439,7 @@ async def get_medical_records(
     }
 
 
- # DELETE 
+ # DELETE RECORD
 @app.delete("/analysis/records/{record_id}", response_model=schemas.StandardResponse[dict])
 async def delete_medical_record(
     record_id: int, 
@@ -474,7 +474,49 @@ async def delete_medical_record(
         "data": {"id": record_id}
     }
 
-from sqlalchemy.orm import Session
+
+# GET ONE RECORD
+@app.get("/analysis/records/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
+async def get_single_medical_record(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    record = db.query(models.MedicalRecord).filter(models.MedicalRecord.id == record_id).first()
+    
+    if not record:
+        raise HTTPException(status_code=404, detail="Medical record not found")
+    
+    doctor_id = current_user.get("id")
+    if record.doctor_id != doctor_id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    return {
+        "message": "Medical record retrieved successfully",
+        "status": "success",
+        "data": record
+    }
+
+
+# GET ALL RECORDS
+@app.get("/analysis/records", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
+async def get_all_doctor_records(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    doctor_id = current_user.get("id")
+    
+    records = db.query(models.MedicalRecord)\
+        .filter(models.MedicalRecord.doctor_id == doctor_id)\
+        .order_by(models.MedicalRecord.id.desc())\
+        .all()
+    
+    return {
+        "message": f"Retrieved {len(records)} total records",
+        "status": "success",
+        "data": records
+    }
+
 
 @app.get("/dashboard/stats", response_model=schemas.StandardResponse[dict])
 async def get_dashboard_stats(
