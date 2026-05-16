@@ -577,6 +577,7 @@ async def get_dashboard_stats(
             "id": record.id,
             "patient_name": p_name,
             "ai_prediction": record.ai_prediction,
+            "confidence_score": record.confidence_score,
             "status": record.status,
             "scan_date": record.scan_date,
             "image_url": record.image_url

@@ -1,0 +1,247 @@
+/* ── Page layout ───────────────────────────────────────── */
+.scan-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #1a1a2e;
+}
+
+/* ── Back button ───────────────────────────────────────── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #555e6d;
+  background: transparent;
+  border: 1px solid #e0e3e8;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.back-btn:hover {
+  background: #f4f6f9;
+  border-color: #c8cdd6;
+}
+
+/* ── Page header ───────────────────────────────────────── */
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: #0d0f1a;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: #7b8494;
+  margin: 0;
+}
+
+/* ── Card base ─────────────────────────────────────────── */
+.card {
+  background: #ffffff;
+  border: 1px solid #e8ebf0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 12px;
+}
+
+/* ── Labels ────────────────────────────────────────────── */
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9aa3b0;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 8px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9aa3b0;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 12px;
+}
+
+/* ── Two-column grid ───────────────────────────────────── */
+.grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 480px) {
+  .grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Badges ────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.badge-success {
+  background: #e6f9f0;
+  color: #0f6e56;
+}
+
+.badge-info {
+  background: #e6f0fb;
+  color: #185fa5;
+}
+
+/* ── Image card ────────────────────────────────────────── */
+.image-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.scan-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.image-placeholder {
+  background: #f7f8fa;
+  border: 1.5px dashed #d0d5df;
+  border-radius: 8px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.placeholder-icon {
+  color: #c2c8d4;
+}
+
+.placeholder-filename {
+  font-size: 13px;
+  color: #7b8494;
+  font-family: 'Courier New', monospace;
+}
+
+.placeholder-hint {
+  font-size: 11px;
+  color: #adb5c2;
+}
+
+/* ── Confidence bar ────────────────────────────────────── */
+.confidence-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.confidence-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #0d0f1a;
+}
+
+.confidence-label-text {
+  font-size: 13px;
+  color: #7b8494;
+}
+
+.confidence-bar-bg {
+  background: #f0f2f5;
+  border-radius: 6px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  width: 0;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Metadata rows ─────────────────────────────────────── */
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.meta-row.last {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.meta-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: #7b8494;
+}
+
+.meta-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a2e;
+  text-align: right;
+}
+
+.meta-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #555e6d;
+}
+
+/* ── Doctor notes ──────────────────────────────────────── */
+.notes-box {
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #3d4452;
+  line-height: 1.6;
+}
+
+.notes-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #9aa3b0;
+  font-style: italic;
+}

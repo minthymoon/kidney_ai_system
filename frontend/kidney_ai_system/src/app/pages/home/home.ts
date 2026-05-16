@@ -1,16 +1,18 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { HomeApisService } from './home-apis-service';
 import { recentActivityI } from './interfaces/stats.interface';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home implements OnInit {
   private readonly homeApisService = inject(HomeApisService);
+  private readonly router = inject(Router);
 
   stats = [
     {
@@ -41,6 +43,8 @@ export class Home implements OnInit {
   total_scans = signal(0);
   pending_scans = signal(0);
 
+  imageErrors: { [id: number]: boolean } = {};
+
   allScans = signal<recentActivityI[]>([]);
 
   ngOnInit(): void {
@@ -61,18 +65,42 @@ export class Home implements OnInit {
     });
   }
 
-  // filteredScans = computed(() => {
-  //   const q = this.searchQuery.toLowerCase();
-  //   const filtered = q
-  //     ? this.allScans.filter(
-  //         (s) =>
-  //           s.type.toLowerCase().includes(q) ||
-  //           s.status.toLowerCase().includes(q) ||
-  //           s.finding.toLowerCase().includes(q),
-  //       )
-  //     : this.allScans;
+  seeDetails(scanID: number) {
+    this.router.navigate([`scan-details-page/${scanID}`]);
+  }
 
-  //   const start = (this.currentPage() - 1) * this.PAGE_SIZE;
-  //   return filtered.slice(start, start + this.PAGE_SIZE);
-  // });
+  onImageError(scanId: number): void {
+    this.imageErrors[scanId] = true;
+  }
+
+  formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  formatTime(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  getConfidenceColor(score: number): string {
+    if (score >= 95) return '#0f6e56';
+    if (score >= 80) return '#185fa5';
+    if (score >= 60) return '#ba7517';
+    return '#a32d2d';
+  }
+
+  getConfidenceBg(score: number): string {
+    if (score >= 95) return '#e6f9f0';
+    if (score >= 80) return '#e6f0fb';
+    if (score >= 60) return '#faeeda';
+    return '#fcebeb';
+  }
 }

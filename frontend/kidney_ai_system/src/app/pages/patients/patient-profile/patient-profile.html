@@ -119,14 +119,8 @@
                     </span>
                   </td>
 
-                  <!-- <td class="td-finding">
-                <span>
-                  {{ scan.image_url }}
-                </span>
-              </td> -->
-
                   <td>
-                    <button class="btn-view">View</button>
+                    <button (click)="seeDetails(scan.id)" class="btn-view">View</button>
                   </td>
                 </tr>
               }

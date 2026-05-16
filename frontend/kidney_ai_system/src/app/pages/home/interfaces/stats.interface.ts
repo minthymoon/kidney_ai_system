@@ -12,6 +12,7 @@ export interface recentActivityI {
   ai_prediction: string;
   doctor_notes?: string;
   confidence_score?: number;
+  patient_id?: number;
   image_url: string;
   patient_name: string;
   status: string;

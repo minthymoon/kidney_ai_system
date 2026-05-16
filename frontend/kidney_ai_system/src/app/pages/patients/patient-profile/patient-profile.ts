@@ -98,4 +98,8 @@ export class PatientProfile implements OnInit {
   createScan() {
     this.router.navigate([`scan-page/${this.patient()?.id!}`]);
   }
+
+  seeDetails(scanID: number) {
+    this.router.navigate([`scan-details-page/${scanID}`]);
+  }
 }
