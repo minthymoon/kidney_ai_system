@@ -1,9 +1,8 @@
 import os
-
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from .database import engine, get_db
+from .database import engine, get_db, SessionLocal
 from . import models as models
 from .auth import get_password_hash, verify_password, create_access_token, get_current_user
 from . import schemas
@@ -80,7 +79,9 @@ def signup(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         email=user_data.email,
-        phone_number=user_data.phone_number
+        phone_number=user_data.phone_number,
+        is_active=True,
+        role=2
     )
     
    
@@ -103,6 +104,8 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
     if not user or not verify_password(user_data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="This account has been deactivated.")
 
     access_token = create_access_token(user=user)
     
@@ -536,6 +539,13 @@ async def get_all_doctor_records(
     }
 
 
+
+# **********************************************************
+# *****************    dashboard         *******************
+# **********************************************************
+
+
+#GET DASHBOARD STATISTICS
 @app.get("/dashboard/stats", response_model=schemas.StandardResponse[dict])
 async def get_dashboard_stats(
     db: Session = Depends(get_db),
@@ -596,3 +606,123 @@ async def get_dashboard_stats(
             "recent_activity": recent_activity
         }
     }
+
+
+
+# **********************************************************
+# *****************   superadmin      *******************
+# **********************************************************
+
+
+#HARDCODE SUPERADMIN
+# superadmin
+def create_super_admin():
+    db = SessionLocal()
+    try:
+        admin = db.query(models.User).filter(models.User.username == "super_admin").first()
+        if not admin:
+            print("Creating Super Admin...")
+            
+            admin_password = os.getenv("SUPER_ADMIN_PASSWORD")
+            if not admin_password:
+                print("⚠️ Warning: SUPER_ADMIN_PASSWORD not set in .env. Using fallback 'Admin123!'")
+                admin_password = "Admin123!"
+
+            new_admin = models.User(
+                username="super_admin",
+                password_hash=get_password_hash(admin_password), 
+                first_name="Super",
+                last_name="Admin",
+                email="admin@system.com",
+                phone_number="0000000000",
+                is_active=True,
+                role=4
+            )
+            
+            db.add(new_admin)
+            db.commit()
+            print("👑 Super Admin 'super_admin' created successfully!")
+        else:
+            print("✅ Super Admin already exists.")
+    except Exception as e:
+        db.rollback()
+        print(f"❌ CRITICAL: Seed failed. Error detail: {e}")
+    finally:
+        db.close()
+
+@app.on_event("startup")
+async def startup_event():
+    create_super_admin()
+
+
+#POST: SUPERADMIN CREATES ADMINS
+@app.post("/admin/create-admin", response_model=schemas.UserResponse)
+def create_new_admin(
+    admin_data: schemas.UserCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if current_user.get("role") !=4:
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied Only Super Admins can create Admin accounts"
+        )
+
+    existing_user = db.query(models.User).filter(models.User.username == admin_data.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    hashed_pwd = get_password_hash(admin_data.password)
+    new_admin = models.User(
+        username=admin_data.username,
+        password_hash=get_password_hash(admin_data.password),
+        first_name=getattr(admin_data, "first_name", "Admin"),
+        last_name=getattr(admin_data, "last_name", "User"),
+        email=getattr(admin_data, "email", f"{admin_data.username}@system.com"),
+        phone_number=getattr(admin_data, "phone_number", "0000000000"),
+        role=3,
+        is_active=True
+     )
+
+    db.add(new_admin)
+    db.commit()
+    db.refresh(new_admin)
+    return new_admin
+
+
+#GET DOCTOR PROFILES
+@app.get("/admin/doctors-overview")
+def get_doctors_overview(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.get("role", 0) < 3:
+        raise HTTPException(status_code=403, detail="Access denied.")
+        
+    doctors = db.query(models.User).filter(models.User.role == 2).all()
+    
+    overview = []
+    for doc in doctors:
+        patient_count = db.query(models.Patient).filter(models.Patient.doctor_id == doc.id).count() 
+        
+        overview.append({
+            "doctor_id": doc.id,
+            "username": doc.username,
+            "is_active": doc.is_active,
+            "number_of_patients": patient_count
+        })
+        
+    return overview
+
+#PUT: DEACTIVATE ACCOUNTS
+@app.put("/admin/deactivate-doctor/{doctor_id}")
+def deactivate_doctor(doctor_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.get("role", 0) < 3:
+        raise HTTPException(status_code=403, detail="Access denied.")
+        
+    doctor = db.query(models.User).filter(models.User.id == doctor_id, models.User.role == 2).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+        
+    doctor.is_active = False
+    db.commit()
+    return {"message": f"Doctor account '{doctor.username}' has been deactivated successfully."}

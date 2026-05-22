@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Integer, String, ForeignKey, Text, DateTime, Float
+from sqlalchemy import Column, Date, Integer, String, ForeignKey, Text, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship
 from .database import Base
 import datetime
@@ -12,6 +12,8 @@ class User(Base):
     last_name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     phone_number = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    role = Column(Integer, default=2)
 
     patients = relationship("Patient", back_populates="doctor")
 

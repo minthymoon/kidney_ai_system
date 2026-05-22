@@ -29,6 +29,9 @@ class UserResponse(BaseModel):
     last_name: str
     email: str
     phone_number: str
+    is_active: bool
+    role: int
+
 
     class Config:
         from_attributes = True
