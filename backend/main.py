@@ -610,7 +610,7 @@ async def get_dashboard_stats(
 
 
 # **********************************************************
-# *****************   superadmin      *******************
+# **************   superadmin and admin     ****************
 # **********************************************************
 
 
@@ -689,10 +689,14 @@ def create_new_admin(
     db.add(new_admin)
     db.commit()
     db.refresh(new_admin)
-    return new_admin
+    return {
+        "message": f"Admin account '{new_admin.username}' created successfully",
+        "status": "success",
+        "data": new_admin
+    }
 
 
-#GET DOCTOR PROFILES
+#GET DOCTOR PROFILES (both admin and superadmin)
 @app.get("/admin/doctors-overview")
 def get_doctors_overview(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.get("role", 0) < 3:
@@ -703,17 +707,22 @@ def get_doctors_overview(db: Session = Depends(get_db), current_user: models.Use
     overview = []
     for doc in doctors:
         patient_count = db.query(models.Patient).filter(models.Patient.doctor_id == doc.id).count() 
-        
+        scan_count = db.query(models.MedicalRecord).filter(models.MedicalRecord.doctor_id == doc.id).count()
+
         overview.append({
             "doctor_id": doc.id,
             "username": doc.username,
             "is_active": doc.is_active,
-            "number_of_patients": patient_count
+            "number_of_patients": patient_count,
+            "number_of_scans": scan_count
         })
         
-    return overview
-
-#PUT: DEACTIVATE ACCOUNTS
+    return {
+        "message": "Doctors overview fetched successfully",
+        "status": "success",
+        "data": overview
+    }
+#PUT: DEACTIVATE ACCOUNTS(both admin and superadmin)
 @app.put("/admin/deactivate-doctor/{doctor_id}")
 def deactivate_doctor(doctor_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.get("role", 0) < 3:
@@ -725,4 +734,172 @@ def deactivate_doctor(doctor_id: int, db: Session = Depends(get_db), current_use
         
     doctor.is_active = False
     db.commit()
-    return {"message": f"Doctor account '{doctor.username}' has been deactivated successfully."}
+    return {
+        "message": f"Doctor account '{doctor.username}' has been deactivated successfully.",
+        "status": "success",
+        "data": doctor
+    }
+
+# GET SPECIFIC DOCTOR DETAILS (both admin and superadmin)
+@app.get("/admin/doctors/{doctor_id}")
+def get_doctor_details(doctor_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.get("role", 0) < 3:
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    doctor = db.query(models.User).filter(
+        models.User.id == doctor_id,
+        models.User.role == 2
+    ).first()
+
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found.")
+
+
+    scans = db.query(models.MedicalRecord).filter(
+        models.MedicalRecord.doctor_id == doctor_id
+    ).all()
+
+    scans_data = []
+    for scan in scans:
+        scans_data.append({
+            "scan_id": scan.id,
+            "patient_id": scan.patient_id,
+            "image_url": scan.image_url,
+            "ai_prediction": scan.ai_prediction,
+            "confidence_score": scan.confidence_score,
+            "doctor_notes": scan.doctor_notes,
+            "scan_date": scan.scan_date,
+            "status": scan.status
+        })
+
+    return {
+        "message": "Doctor details fetched successfully",
+        "status": "success",
+        "data": {
+            "doctor_id": doctor.id,
+            "username": doctor.username,
+            "first_name": doctor.first_name,
+            "last_name": doctor.last_name,
+            "email": doctor.email,
+            "phone_number": doctor.phone_number,
+            "is_active": doctor.is_active,
+            "number_of_patients": db.query(models.Patient).filter(models.Patient.doctor_id == doctor_id).count(),
+            "number_of_scans": len(scans_data),
+            "scans": scans_data
+        }
+    }
+
+
+# GET SCAN RESULTS DISTRIBUTION (for dashboard graph)
+@app.get("/admin/dashboard/scan-distribution")
+def get_scan_distribution(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.get("role", 0) < 3:
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    categories = ["Cyst", "Normal", "Stone", "Tumor"]
+
+    distribution = {}
+    for category in categories:
+        count = db.query(models.MedicalRecord).filter(
+            models.MedicalRecord.ai_prediction == category
+        ).count()
+        distribution[category] = count
+
+    total = sum(distribution.values())
+
+    return {
+        "message": "Scan distribution fetched successfully",
+        "status": "success",
+        "data": {
+            "distribution": distribution,
+            "total_scans": total
+        }
+    }
+
+# **********************************************************
+# **************   superadmin only     *********************
+# **********************************************************
+
+# GET ALL ADMIN PROFILES
+@app.get("/admin/admins-overview")
+def get_all_admins(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != 4:
+        raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can view admin accounts.")
+
+    admins = db.query(models.User).filter(models.User.role == 3).all()
+
+    overview = []
+    for admin in admins:
+        overview.append({
+            "admin_id": admin.id,
+            "username": admin.username,
+            "first_name": admin.first_name,
+            "last_name": admin.last_name,
+            "email": admin.email,
+            "phone_number": admin.phone_number,
+            "is_active": admin.is_active
+        })
+
+    return {
+        "message": "Admins overview fetched successfully",
+        "status": "success",
+        "data": overview
+    }
+
+# GET SPECIFIC ADMIN PROFILE
+@app.get("/admin/admins/{admin_id}")
+def get_admin_details(admin_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != 4:
+        raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can view admin accounts.")
+
+    admin = db.query(models.User).filter(
+        models.User.id == admin_id,
+        models.User.role == 3
+    ).first()
+
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found.")
+
+    return {
+        "message": "Admin details fetched successfully",
+        "status": "success",
+        "data": {
+            "admin_id": admin.id,
+            "username": admin.username,
+            "first_name": admin.first_name,
+            "last_name": admin.last_name,
+            "email": admin.email,
+            "phone_number": admin.phone_number,
+            "is_active": admin.is_active
+        }
+    }
+
+# PUT: DEACTIVATE ADMIN ACCOUNT
+@app.put("/admin/deactivate-admin/{admin_id}")
+def deactivate_admin(admin_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != 4:
+        raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can deactivate admin accounts.")
+
+    admin = db.query(models.User).filter(
+        models.User.id == admin_id,
+        models.User.role == 3
+    ).first()
+
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found.")
+
+    if not admin.is_active:
+        raise HTTPException(status_code=400, detail="Admin account is already deactivated.")
+
+    admin.is_active = False
+    db.commit()
+
+    return {
+        "message": f"Admin account '{admin.username}' has been deactivated successfully.",
+        "status": "success",
+        "data": {
+            "admin_id": admin.id,
+            "username": admin.username,
+            "is_active": admin.is_active
+        }
+    }
