@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { PatientsApisService } from '../patients-apis-service';
-import { FindAllPatientsResponseI } from '../interfaces/find-all-patients-response.interface';
+import { DoctorOverviewI } from '../interfaces/find-all-doctors.interface';
 
 @Component({
   selector: 'app-all-patients',
@@ -11,38 +11,37 @@ import { FindAllPatientsResponseI } from '../interfaces/find-all-patients-respon
 })
 export class AllPatients implements OnInit {
   private readonly router = inject(Router);
-  private readonly patientsApisService = inject(PatientsApisService);
+  private readonly doctorsApisService = inject(PatientsApisService);
 
-  patients = signal<FindAllPatientsResponseI[]>([]);
+  doctors = signal<DoctorOverviewI[]>([]);
 
-  pageSize = 4;
+  pageSize = 8;
   currentPage = signal(1);
   searchQuery = signal('');
 
-  filteredPatients = computed(() => {
+  filteredDoctors = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.patients();
-
-    return this.patients().filter(
-      (p) => p.first_name.toLowerCase().includes(query) || p.email?.toLowerCase().includes(query),
-    );
+    if (!query) return this.doctors();
+    return this.doctors().filter((d) => d.username.toLowerCase().includes(query));
   });
 
-  totalPages = computed(() => Math.ceil(this.filteredPatients().length / this.pageSize));
+  totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filteredDoctors().length / this.pageSize)),
+  );
 
-  paginatedPatients = computed(() => {
+  paginatedDoctors = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredPatients().slice(start, start + this.pageSize);
+    return this.filteredDoctors().slice(start, start + this.pageSize);
   });
 
   ngOnInit(): void {
-    this.findAllPatients();
+    this.findAllDoctors();
   }
 
-  findAllPatients() {
-    this.patientsApisService.findAllPatients().subscribe({
+  findAllDoctors() {
+    this.doctorsApisService.findAllPatients().subscribe({
       next: (response) => {
-        this.patients.set(response.data);
+        this.doctors.set(response.data);
       },
       error: (err) => {
         console.error(err);
@@ -61,11 +60,19 @@ export class AllPatients implements OnInit {
     }
   }
 
-  goToProfile(patient: FindAllPatientsResponseI) {
-    this.router.navigate([`patient-profile/${patient.id}`]);
+  viewScans(doctor: DoctorOverviewI) {
+    this.router.navigate([`doctor-scans/${doctor.doctor_id}`]);
   }
 
-  goToCreatePatient() {
-    this.router.navigate(['create-patient']);
+  editDoctor(doctor: DoctorOverviewI) {
+    this.router.navigate([`edit-doctor/${doctor.doctor_id}`]);
+  }
+
+  deleteDoctor(doctor: DoctorOverviewI) {
+    console.log('Delete doctor', doctor.doctor_id);
+  }
+
+  goToCreateDoctor() {
+    this.router.navigate(['create-doctor']);
   }
 }

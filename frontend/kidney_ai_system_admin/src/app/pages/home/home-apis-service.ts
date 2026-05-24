@@ -9,6 +9,6 @@ export class HomeApisService {
   private readonly apis = inject(Apis);
 
   findAllStats() {
-    return this.apis.get<StatsI>('dashboard/stats');
+    return this.apis.get<StatsI>('admin/dashboard/scan-distribution');
   }
 }

@@ -5,6 +5,7 @@ import { FilterPatientsDto } from './dtos/filter-patients.dto';
 import { FindAllPatientsResponseI } from './interfaces/find-all-patients-response.interface';
 import { CreateScanDto } from './dtos/create-scan.dto';
 import { ScanResponseI } from './interfaces/scan-response.interface';
+import { DoctorOverviewI } from './interfaces/find-all-doctors.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +26,7 @@ export class PatientsApisService {
   }
 
   findAllPatients(filterPatientsDto?: FilterPatientsDto) {
-    return this.apis.get<FindAllPatientsResponseI[]>('patients', filterPatientsDto);
+    return this.apis.get<DoctorOverviewI[]>('admin/doctors-overview', filterPatientsDto);
   }
 
   findOnePatient(patientID: string) {
