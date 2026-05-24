@@ -1,4 +1,20 @@
 <div class="scanner-page">
+  <button class="back-btn" (click)="goBack()">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Back to profile
+  </button>
   <main class="main-layout">
     <!-- ────────────────────────────────────────────
          SECTION 1 — UPLOAD
@@ -303,11 +319,34 @@
           class="note-textarea"
           placeholder="Add clinical observations, follow-up instructions, or any notes about this scan…"
           rows="5"
+          [disabled]="!scanResult()"
           [ngModel]="scanNote()"
           (ngModelChange)="scanNote.set($event)"
         ></textarea>
         <div class="note-footer">
           <span class="char-count">{{ scanNote().length }} characters</span>
+          <button
+            class="btn-note"
+            [disabled]="!canSubmitNote()"
+            [class.loading]="isSubmittingNote()"
+            (click)="submitNote()"
+          >
+            @if (isSubmittingNote()) {
+              <span class="btn-spinner"></span>
+              <span>Saving…</span>
+            } @else {
+              <svg viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M2 8h10M9 5l3 3-3 3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span>Save Note</span>
+            }
+          </button>
         </div>
       </div>
     </section>

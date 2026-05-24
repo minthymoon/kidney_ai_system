@@ -24,6 +24,10 @@ export class PatientsApisService {
     return this.apis.patch(`patients/${patientID}`, createPatientDto);
   }
 
+  updateNotesOnScan(scanID: number, doctor_notes: string) {
+    return this.apis.put(`analysis/update-note/${scanID}`, { notes: doctor_notes });
+  }
+
   findAllPatients(filterPatientsDto?: FilterPatientsDto) {
     return this.apis.get<FindAllPatientsResponseI[]>('patients', filterPatientsDto);
   }

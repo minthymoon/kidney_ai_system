@@ -15,15 +15,25 @@ export class Profile implements OnInit {
   private readonly storageService = inject(StorageService);
   private readonly profileApisService = inject(ProfileApisService);
 
+  // ── Profile editing ──────────────────────────────
   isEditing = false;
   isSaving = false;
   saveSuccess = false;
 
   userID = signal<string | null>(null);
   profile = signal<UserProfile | null>(null);
-
   draft: UserProfile = this.emptyDraft();
 
+  // ── Password modal ───────────────────────────────
+  showPasswordModal = false;
+  isSavingPassword = false;
+  passwordError = '';
+  showOldPassword = false;
+  showNewPassword = false;
+
+  passwordDraft = { old_password: '', new_password: '' };
+
+  // ── Lifecycle ────────────────────────────────────
   ngOnInit(): void {
     this.userID.set(this.storageService.accessToken!);
     this.profileApisService.getLoggedInUser().subscribe({
@@ -35,6 +45,7 @@ export class Profile implements OnInit {
     });
   }
 
+  // ── Profile editing methods ──────────────────────
   getIdFromToken(token: string): string | null {
     try {
       const payload = token.split('.')[1];
@@ -75,6 +86,54 @@ export class Profile implements OnInit {
     });
   }
 
+  // ── Password modal methods ───────────────────────
+  openPasswordModal(): void {
+    this.passwordDraft = { old_password: '', new_password: '' };
+    this.passwordError = '';
+    this.showOldPassword = false;
+    this.showNewPassword = false;
+    this.showPasswordModal = true;
+  }
+
+  closePasswordModal(): void {
+    if (this.isSavingPassword) return;
+    this.showPasswordModal = false;
+  }
+
+  savePassword(): void {
+    this.passwordError = '';
+
+    if (this.passwordDraft.new_password.length < 8) {
+      this.passwordError = 'New password must be at least 8 characters.';
+      return;
+    }
+
+    if (this.passwordDraft.old_password === this.passwordDraft.new_password) {
+      this.passwordError = 'New password must differ from the current one.';
+      return;
+    }
+
+    this.isSavingPassword = true;
+
+    this.profileApisService
+      .changePassword(this.passwordDraft.old_password, this.passwordDraft.new_password)
+      .subscribe({
+        next: () => {
+          this.isSavingPassword = false;
+          this.showPasswordModal = false;
+          this.saveSuccess = true;
+          setTimeout(() => (this.saveSuccess = false), 3000);
+        },
+        error: (err) => {
+          console.error(err);
+          this.passwordError = err?.error?.message ?? 'Something went wrong. Please try again.';
+
+          this.isSavingPassword = false;
+        },
+      });
+  }
+
+  // ── Computed ─────────────────────────────────────
   get initials(): string {
     return (
       (this.profile()?.first_name?.[0] ?? '') + (this.profile()?.last_name?.[0] ?? '')
@@ -86,12 +145,6 @@ export class Profile implements OnInit {
   }
 
   private emptyDraft(): UserProfile {
-    return {
-      username: '',
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone_number: '',
-    };
+    return { username: '', first_name: '', last_name: '', email: '', phone_number: '' };
   }
 }

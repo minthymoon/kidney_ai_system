@@ -45,6 +45,12 @@ export class ScanPage implements OnInit {
 
   // Computed helpers
   canSubmit = computed(() => !!this.selectedFile() && !this.isLoading());
+  canSubmitNote = computed(
+    () => !!this.scanResult() && this.scanNote().trim().length > 0 && !this.isSubmittingNote(),
+  );
+
+  isSubmittingNote = signal(false);
+  noteError = signal<string | null>(null);
 
   /** Human-readable severity label */
   severityLabel(severity: string): string {
@@ -91,6 +97,25 @@ export class ScanPage implements OnInit {
 
   onDragLeave(): void {
     this.isDragOver.set(false);
+  }
+
+  submitNote(): void {
+    const result = this.scanResult();
+    if (!result) return;
+
+    this.isSubmittingNote.set(true);
+    this.noteError.set(null);
+
+    this.patientsApisService.updateNotesOnScan(+result.id, this.scanNote()).subscribe({
+      next: () => {
+        this.isSubmittingNote.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.noteError.set('Failed to save note. Please try again.');
+        this.isSubmittingNote.set(false);
+      },
+    });
   }
 
   onDrop(event: DragEvent): void {
@@ -152,12 +177,16 @@ export class ScanPage implements OnInit {
         setTimeout(() => {
           this.scanResult.set(response.data);
           this.isLoading.set(false);
-        }, 5000);
+        }, 1000);
       },
       error: (err) => {
         console.error(err);
         this.isLoading.set(false);
       },
     });
+  }
+
+  goBack(): void {
+    window.history.back();
   }
 }

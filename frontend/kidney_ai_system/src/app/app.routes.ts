@@ -14,6 +14,7 @@ import { Profile } from './pages/profile/profile';
 import { ScanPage } from './pages/patients/scan-page/scan-page';
 import { ScanDetailsPage } from './pages/scans/scan-details-page/scan-details-page';
 import { AllScans } from './pages/scans/all-scans/all-scans';
+import { QuickScanPage } from './pages/quick-scan/quick-scan-page/quick-scan-page';
 
 export const routes: Routes = [
   {
@@ -22,6 +23,7 @@ export const routes: Routes = [
     canActivate: [authenticationGuard],
     children: [
       { path: 'home', component: Home, title: 'Dashboard' },
+      { path: 'quick-scan', component: QuickScanPage, title: 'Quick scan' },
       { path: 'scans', component: AllScans, title: 'All Scans' },
       { path: 'profile', component: Profile, title: 'Profile' },
       { path: 'patients', component: AllPatients, title: 'All Patients' },

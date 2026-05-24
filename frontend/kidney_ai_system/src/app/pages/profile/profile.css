@@ -52,6 +52,230 @@
   margin: 0;
 }
 
+/* ── Change Password Button ───────────────────────── */
+.change-pw-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.change-pw-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+}
+
+.change-pw-btn svg {
+  flex-shrink: 0;
+  transition: stroke 0.18s ease;
+}
+
+.change-pw-btn:hover svg {
+  stroke: var(--accent);
+}
+
+/* ── Modal Backdrop ───────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 39, 68, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Modal Card ───────────────────────────────────── */
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 64px rgba(15, 39, 68, 0.18);
+  width: 100%;
+  max-width: 460px;
+  animation: slideUp 0.25s ease both;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.modal-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.modal-icon svg {
+  stroke: var(--accent);
+}
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 3px;
+}
+
+.modal-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.modal-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.modal-close:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+.modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-body {
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* ── Eye toggle button ────────────────────────────── */
+.eye-btn {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-light);
+  border-radius: 4px;
+  transition: color 0.18s ease;
+}
+
+.eye-btn:hover {
+  color: var(--accent);
+}
+
+/* ── Inline error ─────────────────────────────────── */
+.pw-error {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: var(--radius-sm);
+  padding: 9px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e11d48;
+}
+
+.pw-error svg {
+  flex-shrink: 0;
+  stroke: #e11d48;
+}
+
+/* ── Modal Footer ─────────────────────────────────── */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: var(--surface-2);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 900px) {
+  .change-pw-btn {
+    width: auto;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-card {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+  }
+
+  .modal-header {
+    padding: 1.2rem 1.2rem 0;
+  }
+
+  .modal-body {
+    padding: 1.2rem;
+  }
+
+  .modal-footer {
+    padding: 1rem 1.2rem;
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-save {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ── Toast ────────────────────────────────────────── */
 .toast {
   position: fixed;
@@ -238,6 +462,7 @@
   padding: 2rem;
   box-shadow: var(--shadow-card);
   animation: slideUp 0.4s 0.08s ease both;
+  height: 100%;
 }
 
 .form-card-header {

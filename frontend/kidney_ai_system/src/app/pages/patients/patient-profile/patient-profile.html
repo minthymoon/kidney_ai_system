@@ -1,4 +1,20 @@
 <section class="patient-profile-page">
+  <button class="back-btn" (click)="goBack()">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Back to patients
+  </button>
   <div class="container">
     <!-- Patient Header Card -->
     <div class="profile-card">
@@ -127,27 +143,6 @@
             </tbody>
           </table>
         </div>
-
-        <!-- Pagination -->
-        <!-- <div class="table-footer">
-          <span class="entries-info">
-            Showing {{ entriesStart() }} to {{ entriesEnd() }} of {{ totalEntries() }} entries
-          </span>
-          <div class="pagination">
-            <button (click)="setPage(currentPage() - 1)" [disabled]="currentPage() === 1">‹</button>
-            @for (page of pages(); track $index) {
-              <button [class.active]="currentPage() === page" (click)="setPage(page)">
-                {{ page }}
-              </button>
-            }
-            <button
-              (click)="setPage(currentPage() + 1)"
-              [disabled]="currentPage() === totalPages()"
-            >
-              ›
-            </button>
-          </div>
-        </div> -->
       </div>
     }
 
@@ -166,6 +161,10 @@
             <div class="demo-row">
               <span class="demo-label">Gender</span>
               <span class="demo-value">{{ patient()?.gender }}</span>
+            </div>
+            <div class="demo-row">
+              <span class="demo-label">Date of Birth</span>
+              <span class="demo-value">{{ patient()?.date_of_birth }}</span>
             </div>
           </div>
         </div>

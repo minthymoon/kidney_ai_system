@@ -1,18 +1,22 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { recentActivityI } from '../../home/interfaces/stats.interface';
 import { ScansApisService } from '../scans-apis-service';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { PatientsApisService } from '../../patients/patients-apis-service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-scan-details-page',
-  imports: [],
+  imports: [CommonModule, FormsModule],
   templateUrl: './scan-details-page.html',
   styleUrl: './scan-details-page.css',
 })
 export class ScanDetailsPage implements OnInit {
   private readonly scansApisService = inject(ScansApisService);
+  private readonly patientsApisService = inject(PatientsApisService);
   private readonly route = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
   private destroyRef = inject(DestroyRef);
@@ -20,9 +24,16 @@ export class ScanDetailsPage implements OnInit {
   scan = signal<recentActivityI | null>(null);
   scanID = signal<string>('');
   imageUrl = signal<SafeResourceUrl | null>(null);
+  scanNote = signal('');
 
   imageError = false;
   confidenceWidth = '0%';
+  canSubmitNote = computed(
+    () => !!this.scan() && this.scanNote().trim().length > 0 && !this.isSubmittingNote(),
+  );
+
+  isSubmittingNote = signal(false);
+  noteError = signal<string | null>(null);
 
   get formattedDate(): string {
     const date = new Date(this.scan()?.scan_date!);
@@ -81,6 +92,7 @@ export class ScanDetailsPage implements OnInit {
     this.scansApisService.findOneScan(scanID).subscribe({
       next: (findOneResponse) => {
         this.scan.set(findOneResponse.data);
+        this.scanNote.set(findOneResponse.data.doctor_notes || '');
 
         this.confidenceWidth = `${this.scan()?.confidence_score || 0}%`;
         this.imageUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.scan()?.image_url!));
@@ -89,6 +101,39 @@ export class ScanDetailsPage implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  submitNote(): void {
+    const result = this.scan();
+    if (!result) return;
+
+    this.isSubmittingNote.set(true);
+    this.noteError.set(null);
+
+    this.patientsApisService.updateNotesOnScan(+result.id, this.scanNote()).subscribe({
+      next: () => {
+        this.isSubmittingNote.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.noteError.set('Failed to save note. Please try again.');
+        this.isSubmittingNote.set(false);
+      },
+    });
+  }
+
+  confirmDelete() {
+    if (confirm('Are you sure you want to delete this scan?')) {
+      this.scansApisService.deleteScan(this.scanID()).subscribe({
+        next: () => {
+          console.log('Scan deleted successfully');
+          this.goBack();
+        },
+        error: (err) => {
+          console.error('Error deleting scan:', err);
+        },
+      });
+    }
   }
 
   onImageError(): void {

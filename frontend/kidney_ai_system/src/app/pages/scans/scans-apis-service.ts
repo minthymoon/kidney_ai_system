@@ -15,4 +15,8 @@ export class ScansApisService {
   findALlScans() {
     return this.apis.get<recentActivityI[]>('analysis/records');
   }
+
+  deleteScan(scanID: string) {
+    return this.apis.delete('analysis/records/' + scanID);
+  }
 }

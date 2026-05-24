@@ -102,4 +102,8 @@ export class PatientProfile implements OnInit {
   seeDetails(scanID: number) {
     this.router.navigate([`scan-details-page/${scanID}`]);
   }
+
+  goBack(): void {
+    window.history.back();
+  }
 }

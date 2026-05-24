@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CreatePatientScan } from './create-patient-scan';
+import { QuickScanPage } from './quick-scan-page';
 
-describe('CreatePatientScan', () => {
-  let component: CreatePatientScan;
-  let fixture: ComponentFixture<CreatePatientScan>;
+describe('QuickScanPage', () => {
+  let component: QuickScanPage;
+  let fixture: ComponentFixture<QuickScanPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreatePatientScan],
+      imports: [QuickScanPage],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CreatePatientScan);
+    fixture = TestBed.createComponent(QuickScanPage);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
