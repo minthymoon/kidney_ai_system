@@ -33,14 +33,29 @@ export class Login {
     this.authApisService.login({ username: this.userName, password: this.password }).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.storageService.accessToken = response.data.access_token;
-        this.router.navigate(['home']);
+        const role = this.getRoleFromToken(response.data.access_token);
+        if (+role! == 3 || +role! == 4) {
+          this.storageService.accessToken = response.data.access_token;
+          this.router.navigate(['home']);
+        } else {
+          alert('Unauthorized: You do not have permission to access this application.');
+        }
       },
       error: (err) => {
         console.error(err);
         this.isLoading = false;
       },
     });
+  }
+
+  getRoleFromToken(token: string): string | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.role ?? null;
+    } catch {
+      return null;
+    }
   }
 
   onCreateAccount(): void {

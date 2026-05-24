@@ -19,15 +19,10 @@ export class CreateAdmin {
   email: string = '';
   username: string = '';
   password: string = '';
-  confirmPassword: string = '';
+  phone_number: string = '';
 
   showPassword: boolean = false;
-  showConfirmPassword: boolean = false;
   isLoading: boolean = false;
-
-  get passwordMismatch(): boolean {
-    return this.confirmPassword.length > 0 && this.password !== this.confirmPassword;
-  }
 
   get formValid(): boolean {
     return (
@@ -35,17 +30,13 @@ export class CreateAdmin {
       this.lastName.trim().length > 0 &&
       this.email.trim().length > 0 &&
       this.username.trim().length > 0 &&
-      this.password.length >= 8 &&
-      this.password === this.confirmPassword
+      this.phone_number.trim().length > 0 &&
+      this.password.length >= 8
     );
   }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
-  }
-
-  toggleConfirmPassword(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
   onSubmit(): void {
@@ -54,12 +45,12 @@ export class CreateAdmin {
 
     this.adminsApisService
       .createAdmin({
-        firstName: this.firstName,
-        lastName: this.lastName,
+        first_name: this.firstName,
+        last_name: this.lastName,
         email: this.email,
         username: this.username,
+        phone_number: this.phone_number,
         password: this.password,
-        confirmPassword: this.confirmPassword,
       })
       .subscribe({
         next: () => {

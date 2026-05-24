@@ -42,7 +42,6 @@ export class AllAdmins implements OnInit {
     this.adminsApisService.findAllAdmins().subscribe({
       next: (response) => {
         this.admins.set(response.data);
-        console.log(response);
       },
       error: (err) => {
         console.error(err);

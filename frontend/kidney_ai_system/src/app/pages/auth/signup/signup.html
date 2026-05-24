@@ -149,6 +149,32 @@
             </div>
           </div>
 
+          <div class="field-group">
+            <label for="phone_number">Phone number</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="#9ca3af" stroke-width="1.8" />
+                  <path
+                    d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <input
+                id="phone_number"
+                type="text"
+                name="phone_number"
+                [(ngModel)]="phone_number"
+                placeholder="+254 700 000 000"
+                autocomplete="tel"
+                required
+              />
+            </div>
+          </div>
+
           <!-- SECURITY -->
           <div class="section-label">Security</div>
 
@@ -213,71 +239,6 @@
               </button>
             </div>
             <span class="field-hint">Must be at least 8 characters with numbers and symbols.</span>
-          </div>
-
-          <div class="field-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <div class="input-wrapper" [class.error]="passwordMismatch">
-              <span class="input-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="5"
-                    y="11"
-                    width="14"
-                    height="10"
-                    rx="2"
-                    stroke="#9ca3af"
-                    stroke-width="1.8"
-                  />
-                  <path
-                    d="M8 11V7a4 4 0 018 0v4"
-                    stroke="#9ca3af"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </span>
-              <input
-                id="confirmPassword"
-                [type]="showConfirmPassword ? 'text' : 'password'"
-                name="confirmPassword"
-                [(ngModel)]="confirmPassword"
-                placeholder="••••••••"
-                autocomplete="new-password"
-                required
-              />
-              <button
-                type="button"
-                class="toggle-btn"
-                (click)="toggleConfirmPassword()"
-                [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
-              >
-                @if (!showConfirmPassword) {
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
-                      stroke="#9ca3af"
-                      stroke-width="1.8"
-                    />
-                    <circle cx="12" cy="12" r="3" stroke="#9ca3af" stroke-width="1.8" />
-                  </svg>
-                }
-
-                @if (showConfirmPassword) {
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"
-                      stroke="#9ca3af"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                }
-              </button>
-            </div>
-            @if (passwordMismatch) {
-              <span class="field-hint error-text">Passwords do not match.</span>
-            }
           </div>
 
           <button
