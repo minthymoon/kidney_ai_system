@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .ai_service import predict_kidney_image, model
 from fastapi.staticfiles import StaticFiles
 from fastapi import Form
+from .schemas import UserResponse
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -656,7 +657,7 @@ async def startup_event():
 
 
 #POST: SUPERADMIN CREATES ADMINS
-@app.post("/admin/create-admin", response_model=schemas.UserResponse)
+@app.post("/admin/create-admin", response_model=schemas.StandardResponse[UserResponse])
 def create_new_admin(
     admin_data: schemas.UserCreate,
     db: Session = Depends(get_db),
@@ -664,7 +665,7 @@ def create_new_admin(
 ):
     user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
 
-    if current_user.get("role") !=4:
+    if user_role != 4:
         raise HTTPException(
             status_code=403,
             detail="Access denied Only Super Admins can create Admin accounts"
