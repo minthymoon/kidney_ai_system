@@ -1,0 +1,269 @@
+<div class="scan-page">
+  <!-- Back Button -->
+  <button class="back-btn" (click)="goBack()">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Back to scans
+  </button>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">Scan #{{ scan()?.id }}</h1>
+    <p class="page-sub">
+      Patient ID: {{ scan()?.patient_id }}&nbsp;&nbsp;·&nbsp;&nbsp;{{ formattedDate }} at
+      {{ formattedTime }}
+    </p>
+  </div>
+
+  <!-- Scan Image -->
+  <div class="card image-card">
+    <p class="section-label">Scan image</p>
+    @if (imageUrl()) {
+      <div class="image-wrapper">
+        <img
+          [src]="imageUrl()"
+          [alt]="'Scan image for patient ' + scan()?.patient_id"
+          class="scan-image"
+          (error)="onImageError()"
+        />
+      </div>
+    } @else {
+      <div class="image-placeholder">
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="placeholder-icon"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+        <span class="placeholder-filename">{{ fileName }}</span>
+        <span class="placeholder-hint">Image not available</span>
+      </div>
+    }
+  </div>
+
+  <!-- AI Prediction + Status -->
+  <div class="grid-two">
+    <div class="card">
+      <p class="label">AI prediction</p>
+      <span class="badge badge-info">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+        {{ scan()?.ai_prediction }}
+      </span>
+    </div>
+
+    <div class="card">
+      <p class="label">Status</p>
+      <span class="badge badge-success">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        {{ scan()?.status }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Confidence Score -->
+  <div class="card">
+    <p class="label">Confidence score</p>
+    <div class="confidence-header">
+      <span class="confidence-value">{{ scan()?.confidence_score?.toFixed(2) }}%</span>
+      <span class="confidence-label-text">{{ confidenceLabel }}</span>
+    </div>
+    <div class="confidence-bar-bg">
+      <div
+        class="confidence-bar-fill"
+        [style.width]="confidenceWidth"
+        [style.background-color]="confidenceColor"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Scan Metadata -->
+  <div class="card">
+    <p class="section-label">Scan details</p>
+
+    <div class="meta-row">
+      <span class="meta-label">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="4" y1="9" x2="20" y2="9" />
+          <line x1="4" y1="15" x2="20" y2="15" />
+          <line x1="10" y1="3" x2="8" y2="21" />
+          <line x1="16" y1="3" x2="14" y2="21" />
+        </svg>
+        Scan ID
+      </span>
+      <span class="meta-value">{{ scan()?.id }}</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+        Patient ID
+      </span>
+      <span class="meta-value">{{ scan()?.patient_id }}</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        Scan date
+      </span>
+      <span class="meta-value">{{ formattedDate }}</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        Scan time
+      </span>
+      <span class="meta-value">{{ formattedTime }}</span>
+    </div>
+
+    <div class="meta-row last">
+      <span class="meta-label">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        Image file
+      </span>
+      <span class="meta-value meta-mono">{{ fileName }}</span>
+    </div>
+  </div>
+
+  <!-- Doctor Notes -->
+  <div class="card">
+    <p class="section-label">Doctor notes</p>
+    @if (scan()?.doctor_notes) {
+      <div class="notes-box">
+        {{ scan()?.doctor_notes }}
+      </div>
+    } @else {
+      <div class="notes-empty">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        No doctor notes have been added yet.
+      </div>
+    }
+  </div>
+</div>

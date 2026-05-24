@@ -1,0 +1,72 @@
+<section class="patients-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h2>Recent Patients</h2>
+        <p>Manage and review patients</p>
+      </div>
+    </div>
+    <div class="add-btn">
+      <input
+        class="search"
+        placeholder="Search patient name or email..."
+        (input)="onSearch($event)"
+      />
+      <button (click)="goToCreatePatient()" class="btn">+ Add patient</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient Info</th>
+            <th>Date of birth</th>
+            <th>Gender</th>
+            <th>Phone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (patient of paginatedPatients(); track patient.id) {
+            <tr>
+              <td class="patient-info">
+                <div class="avatar">
+                  {{ patient.first_name.charAt(0) }}
+                </div>
+
+                <div>
+                  <strong>{{ patient.first_name }} {{ patient.last_name }} </strong>
+                  <p>ID: PT-{{ patient.id }}</p>
+                </div>
+              </td>
+
+              <td>{{ patient.date_of_birth }}</td>
+              <td>{{ patient.gender }}</td>
+              <td>{{ patient.phone_number }}</td>
+
+              <td>
+                <button (click)="goToProfile(patient)" class="view">View Profile</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button (click)="setPage(currentPage() - 1)">‹</button>
+
+      @for (page of [].constructor(totalPages()); track $index) {
+        <button [class.active]="currentPage() === $index + 1" (click)="setPage($index + 1)">
+          {{ $index + 1 }}
+        </button>
+      }
+
+      <button (click)="setPage(currentPage() + 1)">›</button>
+    </div>
+  </div>
+</section>
