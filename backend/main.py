@@ -552,6 +552,7 @@ async def get_all_doctor_records(
 #GET DASHBOARD STATISTICS
 @app.get("/dashboard/stats", response_model=schemas.StandardResponse[dict])
 async def get_dashboard_stats(
+    request: Request,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -584,9 +585,14 @@ async def get_dashboard_stats(
     {"label": pred if pred else "Normal", "value": count} 
     for pred, count in diagnosis_counts
 ]
+    
+    base_url = str(request.base_url).rstrip("/")
 
     recent_activity = []
     for record, p_name in query_result:
+        image_url = record.image_url
+        if image_url and not image_url.startswith("http"):
+            image_url = f"{base_url}{image_url}"
         recent_activity.append({
             "id": record.id,
             "patient_name": p_name,
@@ -594,7 +600,7 @@ async def get_dashboard_stats(
             "confidence_score": record.confidence_score,
             "status": record.status,
             "scan_date": record.scan_date,
-            "image_url": record.image_url
+            "image_url": image_url
         })
 
     return {
