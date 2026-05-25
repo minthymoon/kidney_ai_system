@@ -175,6 +175,7 @@ def get_patients(
         "data": patients
     }
 
+
 @app.get("/patients/{patient_id}", response_model=schemas.StandardResponse[schemas.PatientResponse])
 def get_one_patient(
     patient_id: int, 
@@ -197,6 +198,7 @@ def get_one_patient(
         "data": patient
     }
 
+#DELETE:patient
 @app.delete("/patients/{patient_id}")
 def delete_patient(
     patient_id: int, 
@@ -224,8 +226,7 @@ def delete_patient(
         }
 
 
-# for this: when the doc clicks edit, the frontend fetches the getpatient and their id, and uses the data from there to fill the input boxes
-# when the doctor saves they only send back the changes to the patch route, ok?
+#PATCH: edit patient profile
 @app.patch("/patients/{patient_id}", response_model=schemas.PatientUpdateResponse)
 def update_patient(
     patient_id: int, 
@@ -262,7 +263,7 @@ def update_patient(
 # *****************    doctors          *******************
 # **********************************************************
 
-
+#GET: retrieve doc profile
 @app.get("/doctors/profile", response_model=schemas.StandardResponse[schemas.UserResponse])
 def get_full_doctor_profile(
     db: Session = Depends(get_db), 
@@ -279,6 +280,7 @@ def get_full_doctor_profile(
         "data": doctor
     }
 
+#PATCH: edit doc profile
 @app.patch("/doctors/profile", response_model=schemas.StandardResponse[schemas.UserResponse])
 def update_doctor_profile(
     user_update: schemas.UserUpdate,
@@ -302,7 +304,7 @@ def update_doctor_profile(
         "status": "success",
         "data": db_user
     }
-
+#POST:change password
 @app.post("/doctors/change-password", response_model=schemas.StandardResponse[dict])
 def change_password(
     pass_data: schemas.PasswordChange,
@@ -336,7 +338,7 @@ def change_password(
 # **********************************************************
 
 
-# POST
+# POST: ai analysis
 @app.post("/analysis/predict-image", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def upload_kidney_image(
     patient_id: int = Form(...) , 
@@ -391,28 +393,29 @@ async def upload_kidney_image(
         raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
 
 
- # PUT
-@app.put("/analysis/update-note/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
+ # PATCH: note on analysis
+@app.patch("/analysis/update-note/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
 async def add_doctor_note(
-    record_id: int, 
-    notes: str, 
+    record_id: int,
+    note_data: schemas.DoctorNoteUpdate,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    
-    record = db.query(models.MedicalRecord).filter(models.MedicalRecord.id == record_id).first()
+    record = db.query(models.MedicalRecord).filter(
+        models.MedicalRecord.id == record_id
+    ).first()
+
     if not record:
         raise HTTPException(status_code=404, detail="Medical record not found")
 
     doctor_id = current_user.get("id")
-    
     if record.doctor_id != doctor_id:
         raise HTTPException(
-            status_code=403, 
+            status_code=403,
             detail="You do not have permission to edit this record"
         )
 
-    record.doctor_notes = notes
+    record.doctor_notes = note_data.notes
     db.commit()
     db.refresh(record)
 
@@ -608,6 +611,43 @@ async def get_dashboard_stats(
         }
     }
 
+# **********************************************************
+# *****************    quick scan         ******************
+# **********************************************************
+
+
+
+# POST: quick scan (no patient, no record saved)
+@app.post("/analysis/quick-scan")
+async def quick_scan(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role != 2:
+        raise HTTPException(status_code=403, detail="Access denied. Doctors only.")
+
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image (JPG/PNG)")
+
+    file_content = await file.read()
+
+    try:
+        prediction_result = predict_kidney_image(file_content, model)
+
+        return {
+            "message": "Quick scan completed",
+            "status": "success",
+            "data": {
+                "result": prediction_result["result"],
+                "confidence": prediction_result["confidence"],
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
+
 
 
 # **********************************************************
@@ -697,13 +737,53 @@ def create_new_admin(
     }
 
 
+#POST: superadmin and admin add doctors
+@app.post("/admin/create-doctor", response_model=schemas.StandardResponse[UserResponse])
+def create_new_doctor(
+    doctor_data: schemas.UserCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role not in (3, 4):
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied. Only Admins and Super Admins can create Doctor accounts"
+        )
+
+    existing_user = db.query(models.User).filter(models.User.username == doctor_data.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    new_doctor = models.User(
+        username=doctor_data.username,
+        password_hash=get_password_hash(doctor_data.password),
+        first_name=getattr(doctor_data, "first_name", "Doctor"),
+        last_name=getattr(doctor_data, "last_name", "User"),
+        email=getattr(doctor_data, "email", f"{doctor_data.username}@system.com"),
+        phone_number=getattr(doctor_data, "phone_number", "0000000000"),
+        role=2,
+        is_active=True
+    )
+
+    db.add(new_doctor)
+    db.commit()
+    db.refresh(new_doctor)
+    return {
+        "message": f"Doctor account '{new_doctor.username}' created successfully",
+        "status": "success",
+        "data": new_doctor
+    }
+
+
 #GET DOCTOR PROFILES (both admin and superadmin)
 @app.get("/admin/doctors-overview")
 def get_doctors_overview(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.get("role", 0) < 3:
         raise HTTPException(status_code=403, detail="Access denied.")
         
-    doctors = db.query(models.User).filter(models.User.role == 2).all()
+    doctors = db.query(models.User).filter(models.User.role == 2, models.User.is_active == True).all()
     
     overview = []
     for doc in doctors:
@@ -713,6 +793,10 @@ def get_doctors_overview(db: Session = Depends(get_db), current_user: models.Use
         overview.append({
             "doctor_id": doc.id,
             "username": doc.username,
+            "first_name": doc.first_name,
+            "last_name": doc.last_name,
+            "email": doc.email,
+            "phone_number": doc.phone_number,
             "is_active": doc.is_active,
             "number_of_patients": patient_count,
             "number_of_scans": scan_count
@@ -723,22 +807,92 @@ def get_doctors_overview(db: Session = Depends(get_db), current_user: models.Use
         "status": "success",
         "data": overview
     }
-#PUT: DEACTIVATE ACCOUNTS(both admin and superadmin)
-@app.put("/admin/deactivate-doctor/{doctor_id}")
-def deactivate_doctor(doctor_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    if current_user.get("role", 0) < 3:
-        raise HTTPException(status_code=403, detail="Access denied.")
-        
-    doctor = db.query(models.User).filter(models.User.id == doctor_id, models.User.role == 2).first()
+
+
+#EDIT DOCTOR PROFILE (both admin and superadmin)
+@app.patch("/admin/edit-doctor/{doctor_id}")
+def edit_doctor(
+    doctor_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    first_name: str = None,
+    last_name: str = None,
+    email: str = None,
+    phone_number: str = None,
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role not in (3, 4):
+        raise HTTPException(status_code=403, detail="Access denied. Only Admins and Super Admins can edit Doctor accounts")
+
+    doctor = db.query(models.User).filter(
+        models.User.id == doctor_id,
+        models.User.role == 2,
+    ).first()
+
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
-        
+
+    if first_name is not None:
+        doctor.first_name = first_name
+    if last_name is not None:
+        doctor.last_name = last_name
+    if email is not None:
+        existing = db.query(models.User).filter(
+            models.User.email == email,
+            models.User.id != doctor_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        doctor.email = email
+    if phone_number is not None:
+        doctor.phone_number = phone_number
+
+    db.commit()
+    db.refresh(doctor)
+
+    return {
+        "message": f"Doctor '{doctor.username}' updated successfully",
+        "status": "success",
+        "data": {
+            "doctor_id": doctor.id,
+            "username": doctor.username,
+            "first_name": doctor.first_name,
+            "last_name": doctor.last_name,
+            "email": doctor.email,
+            "phone_number": doctor.phone_number,
+        }
+    }
+
+
+#DELETE DOCTOR (both admin and superadmin)
+@app.delete("/admin/delete-doctor/{doctor_id}")
+def delete_doctor(
+    doctor_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role not in (3, 4):
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    doctor = db.query(models.User).filter(
+        models.User.id == doctor_id,
+        models.User.role == 2,
+        models.User.is_active == True
+    ).first()
+
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found or already deactivated")
+
     doctor.is_active = False
     db.commit()
+
     return {
-        "message": f"Doctor account '{doctor.username}' has been deactivated successfully.",
+        "message": f"Doctor '{doctor.username}' has been deleted successfully.",
         "status": "success",
-        "data": doctor
+        "data": None
     }
 
 # GET SPECIFIC DOCTOR DETAILS (both admin and superadmin)
@@ -808,14 +962,101 @@ def get_scan_distribution(db: Session = Depends(get_db), current_user: models.Us
 
     total = sum(distribution.values())
 
+    total_doctors = db.query(models.User).filter(
+        models.User.role == 2,
+        models.User.is_active == True
+    ).count()
+
+    total_patients = db.query(models.Patient).count()
+
     return {
         "message": "Scan distribution fetched successfully",
         "status": "success",
         "data": {
             "distribution": distribution,
-            "total_scans": total
+            "total_scans": total,
+            "total_doctors": total_doctors,
+            "total_patients": total_patients
         }
     }
+
+
+# GET ALL RECORDS (both admin and superadmin)
+@app.get("/admin/records", response_model=schemas.StandardResponse[list[schemas.MedicalRecordResponse]])
+async def get_all_records_admin(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role not in (3, 4):
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    records = db.query(models.MedicalRecord)\
+        .order_by(models.MedicalRecord.id.desc())\
+        .all()
+
+    base_url = str(request.base_url).rstrip("/")
+
+    overview = []
+    for record in records:
+        image_url = record.image_url
+        if image_url and not image_url.startswith("http"):
+            image_url = f"{base_url}{image_url}"
+
+        overview.append({
+            "record_id": record.id,
+            "patient_id": record.patient_id,
+            "doctor_id": record.doctor_id,
+            "image_url": image_url,
+            "created_at": record.created_at,
+        })
+
+    return {
+        "message": f"Retrieved {len(overview)} total records",
+        "status": "success",
+        "data": overview
+    }
+
+
+# GET ONE RECORD (both admin and superadmin)
+@app.get("/admin/records/{record_id}", response_model=schemas.StandardResponse[schemas.MedicalRecordResponse])
+async def get_single_record_admin(
+    record_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role not in (3, 4):
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    record = db.query(models.MedicalRecord).filter(
+        models.MedicalRecord.id == record_id
+    ).first()
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Medical record not found")
+
+    base_url = str(request.base_url).rstrip("/")
+    image_url = record.image_url
+    if image_url and not image_url.startswith("http"):
+        image_url = f"{base_url}{image_url}"
+
+    return {
+        "message": "Medical record retrieved successfully",
+        "status": "success",
+        "data": {
+            "record_id": record.id,
+            "patient_id": record.patient_id,
+            "doctor_id": record.doctor_id,
+            "image_url": image_url,
+            "created_at": record.created_at,
+        }
+    }
+
 
 # **********************************************************
 # **************   superadmin only     *********************
@@ -827,7 +1068,7 @@ def get_all_admins(db: Session = Depends(get_db), current_user: dict = Depends(g
     if current_user.get("role") != 4:
         raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can view admin accounts.")
 
-    admins = db.query(models.User).filter(models.User.role == 3).all()
+    admins = db.query(models.User).filter(models.User.role == 3, models.User.is_active == True).all()
 
     overview = []
     for admin in admins:
@@ -875,11 +1116,23 @@ def get_admin_details(admin_id: int, db: Session = Depends(get_db), current_user
         }
     }
 
-# PUT: DEACTIVATE ADMIN ACCOUNT
-@app.put("/admin/deactivate-admin/{admin_id}")
-def deactivate_admin(admin_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    if current_user.get("role") != 4:
-        raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can deactivate admin accounts.")
+
+
+#EDIT ADMIN PROFILE (superadmin only)
+@app.patch("/admin/edit-admin/{admin_id}")
+def edit_admin(
+    admin_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    first_name: str = None,
+    last_name: str = None,
+    email: str = None,
+    phone_number: str = None,
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role != 4:
+        raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can edit Admin accounts")
 
     admin = db.query(models.User).filter(
         models.User.id == admin_id,
@@ -887,20 +1140,66 @@ def deactivate_admin(admin_id: int, db: Session = Depends(get_db), current_user:
     ).first()
 
     if not admin:
-        raise HTTPException(status_code=404, detail="Admin not found.")
+        raise HTTPException(status_code=404, detail="Admin not found")
 
-    if not admin.is_active:
-        raise HTTPException(status_code=400, detail="Admin account is already deactivated.")
+    if first_name is not None:
+        admin.first_name = first_name
+    if last_name is not None:
+        admin.last_name = last_name
+    if email is not None:
+        existing = db.query(models.User).filter(
+            models.User.email == email,
+            models.User.id != admin_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        admin.email = email
+    if phone_number is not None:
+        admin.phone_number = phone_number
+
+    db.commit()
+    db.refresh(admin)
+
+    return {
+        "message": f"Admin '{admin.username}' updated successfully",
+        "status": "success",
+        "data": {
+            "admin_id": admin.id,
+            "username": admin.username,
+            "first_name": admin.first_name,
+            "last_name": admin.last_name,
+            "email": admin.email,
+            "phone_number": admin.phone_number,
+        }
+    }
+
+
+#DELETE ADMIN (superadmin only)
+@app.delete("/admin/delete-admin/{admin_id}")
+def delete_admin(
+    admin_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
+
+    if user_role != 4:
+        raise HTTPException(status_code=403, detail="Access denied. Only Super Admins can delete Admin accounts")
+
+    admin = db.query(models.User).filter(
+        models.User.id == admin_id,
+        models.User.role == 3,
+        models.User.is_active == True
+    ).first()
+
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found or already deactivated")
 
     admin.is_active = False
     db.commit()
 
     return {
-        "message": f"Admin account '{admin.username}' has been deactivated successfully.",
+        "message": f"Admin '{admin.username}' has been deleted successfully.",
         "status": "success",
-        "data": {
-            "admin_id": admin.id,
-            "username": admin.username,
-            "is_active": admin.is_active
-        }
+        "data": None
     }

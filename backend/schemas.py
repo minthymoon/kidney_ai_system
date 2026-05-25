@@ -112,3 +112,6 @@ class StandardResponse(BaseModel, Generic[T]):
 class ChartData(BaseModel):
     label: str
     value: int
+
+class DoctorNoteUpdate(BaseModel):
+    notes: str
