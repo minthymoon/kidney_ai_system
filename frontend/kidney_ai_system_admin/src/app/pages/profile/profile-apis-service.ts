@@ -16,4 +16,11 @@ export class ProfileApisService {
   updateLoggedInUser(updateUserProfile: UpdateUserProfileDto) {
     return this.apis.patch<UserProfile>(`doctors/profile`, updateUserProfile);
   }
+
+  changePassword(oldPassword: string, newPassword: string) {
+    return this.apis.post(`admin/change-password`, {
+      old_password: oldPassword,
+      new_password: newPassword,
+    });
+  }
 }

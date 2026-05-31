@@ -1,1 +1,131 @@
-<p>delete-admin works!</p>
+<!-- delete-doctor-confirm.component.html -->
+<div class="page-wrapper">
+  <!-- Background grid decoration -->
+  <div class="bg-grid"></div>
+
+  <div class="card-container">
+    <!-- ── Error: no doctor ID ── -->
+    @if (errorMessage && !isDeleting) {
+      <div class="state-panel state-error">
+        <div class="state-icon error-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h2 class="state-title">Something went wrong</h2>
+        <p class="state-message">{{ errorMessage }}</p>
+        <button class="btn btn-outline" (click)="cancel()">
+          <span>← Back to Admins</span>
+        </button>
+      </div>
+    }
+
+    <!-- ── Success state ── -->
+    @if (isDeleted) {
+      <div class="state-panel state-success">
+        <div class="state-icon success-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 class="state-title">Admin Removed</h2>
+        <p class="state-message">
+          Admin <span class="id-badge">#{{ adminID() }}</span> has been permanently deleted.
+          Redirecting you shortly…
+        </p>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Confirmation state ── -->
+    @if (!isDeleted && !(errorMessage && !isDeleting)) {
+      <div class="confirm-panel">
+        <!-- Header -->
+        <div class="panel-header">
+          <div class="danger-badge">DANGER ZONE</div>
+          <div class="trash-icon-wrapper">
+            <svg
+              class="trash-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
+          </div>
+          <h1 class="panel-title">Delete Admin</h1>
+          <p class="panel-subtitle">
+            This action is <strong>irreversible</strong>. The admin record and all associated data
+            will be permanently erased from the system.
+          </p>
+        </div>
+
+        <!-- Doctor ID display -->
+        <div class="doctor-id-display">
+          <span class="id-label">Admin ID</span>
+          <span class="id-value">{{ adminID() }}</span>
+        </div>
+
+        <!-- Warning checklist -->
+        <ul class="warning-list">
+          <li>
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 4h2v5H7zm0 6h2v2H7z" />
+            </svg>
+            All appointments linked to this admin will be orphaned
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 4h2v5H7zm0 6h2v2H7z" />
+            </svg>
+            Patient histories referencing this admin will be affected
+          </li>
+          <li>
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 4h2v5H7zm0 6h2v2H7z" />
+            </svg>
+            This cannot be undone without a database restore
+          </li>
+        </ul>
+
+        <!-- Action buttons -->
+        <div class="action-row">
+          <button class="btn btn-outline" (click)="cancel()" [disabled]="isDeleting">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+            @if (!isDeleting) {
+              <span>Delete Permanently</span>
+            }
+
+            @if (isDeleting) {
+              <span class="spinner-row"> <span class="spinner"></span> Deleting… </span>
+            }
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

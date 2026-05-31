@@ -19,4 +19,8 @@ export class AdminsApisService {
   createAdmin(createAdminDto: CreateAdminDto) {
     return this.apis.post('admin/create-admin', createAdminDto);
   }
+
+  deleteAdmin(adminID: string) {
+    return this.apis.delete(`admin/delete-admin/${adminID}`);
+  }
 }

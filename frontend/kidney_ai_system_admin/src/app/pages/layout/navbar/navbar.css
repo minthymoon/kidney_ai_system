@@ -379,7 +379,7 @@
 }
 
 /* ── Responsive Breakpoints ───────────────────────── */
-@media (max-width: 768px) {
+@media (max-width: 940px) {
   .nav-links {
     display: none;
   }
@@ -389,13 +389,7 @@
   .mobile-menu {
     display: flex;
   }
-  .user-info {
-    display: none;
-  }
-  .user-menu {
-    padding: 5px;
-    border-radius: 50%;
-  }
+
   .chevron {
     display: none;
   }

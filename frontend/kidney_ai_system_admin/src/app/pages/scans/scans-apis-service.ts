@@ -13,6 +13,6 @@ export class ScansApisService {
   }
 
   findALlScans() {
-    return this.apis.get<recentActivityI[]>('analysis/records');
+    return this.apis.get<recentActivityI[]>('admin/records');
   }
 }

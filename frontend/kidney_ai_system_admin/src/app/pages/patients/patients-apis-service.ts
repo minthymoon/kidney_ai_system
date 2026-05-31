@@ -27,4 +27,8 @@ export class PatientsApisService {
   findOnePatient(patientID: string) {
     return this.apis.get<FindAllPatientsResponseI>(`patients/${patientID}`);
   }
+
+  deleteDoctor(doctorID: string) {
+    return this.apis.delete(`admin/delete-doctor/${doctorID}`);
+  }
 }

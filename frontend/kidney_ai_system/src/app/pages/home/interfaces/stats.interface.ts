@@ -4,6 +4,7 @@ export interface StatsI {
     total_scans: number;
     pending_scans: number;
   };
+  chart_data: ChartDateI[];
   recent_activity: recentActivityI[];
 }
 
@@ -17,4 +18,9 @@ export interface recentActivityI {
   patient_name: string;
   status: string;
   scan_date: string;
+}
+
+export interface ChartDateI {
+  label: string;
+  value: number;
 }

@@ -13,6 +13,8 @@ import { ScanDetailsPage } from './pages/scans/scan-details-page/scan-details-pa
 import { AllScans } from './pages/scans/all-scans/all-scans';
 import { AllAdmins } from './pages/admins/all-admins/all-admins';
 import { CreateAdmin } from './pages/admins/create-admin/create-admin';
+import { DeleteDoctorDialog } from './pages/patients/delete-doctor-dialog/delete-doctor-dialog';
+import { DeleteAdmin } from './pages/admins/delete-admin/delete-admin';
 
 export const routes: Routes = [
   {
@@ -28,6 +30,8 @@ export const routes: Routes = [
       { path: 'scan-details-page/:scanID', component: ScanDetailsPage, title: 'Scan details page' },
       { path: 'admins', component: AllAdmins, title: 'All Admins' },
       { path: 'create-admin', component: CreateAdmin, title: 'Create Admin' },
+      { path: 'delete-admin/:adminID', component: DeleteAdmin, title: 'Delete Admin' },
+      { path: 'delete-doctor/:doctorID', component: DeleteDoctorDialog, title: 'Delete Doctor' },
     ],
   },
   {

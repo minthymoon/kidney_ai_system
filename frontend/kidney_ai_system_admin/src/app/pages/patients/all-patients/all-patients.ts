@@ -69,7 +69,7 @@ export class AllPatients implements OnInit {
   }
 
   deleteDoctor(doctor: DoctorOverviewI) {
-    console.log('Delete doctor', doctor.doctor_id);
+    this.router.navigate(['delete-doctor', doctor.doctor_id]);
   }
 
   goToCreateDoctor() {

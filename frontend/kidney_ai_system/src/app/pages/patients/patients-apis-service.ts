@@ -25,7 +25,7 @@ export class PatientsApisService {
   }
 
   updateNotesOnScan(scanID: number, doctor_notes: string) {
-    return this.apis.put(`analysis/update-note/${scanID}`, { notes: doctor_notes });
+    return this.apis.patch(`analysis/update-note/${scanID}`, { notes: doctor_notes });
   }
 
   findAllPatients(filterPatientsDto?: FilterPatientsDto) {

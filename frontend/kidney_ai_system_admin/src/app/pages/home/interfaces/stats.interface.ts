@@ -1,10 +1,15 @@
 export interface StatsI {
-  stats: {
-    total_patients: number;
-    total_scans: number;
-    pending_scans: number;
-  };
-  recent_activity: recentActivityI[];
+  total_doctors: number;
+  total_patients: number;
+  total_scans: number;
+  distribution: DistributionI;
+}
+
+interface DistributionI {
+  Cyst: number;
+  Normal: number;
+  Stone: number;
+  Tumor: number;
 }
 
 export interface recentActivityI {

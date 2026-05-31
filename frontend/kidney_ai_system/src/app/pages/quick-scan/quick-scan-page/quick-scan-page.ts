@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ScanResponseI } from '../../patients/interfaces/scan-response.interface';
-import { PatientsApisService } from '../../patients/patients-apis-service';
+import { QuickScanApisService } from '../quick-scan-apis-service';
+import { QuickScanResult } from '../interfaces/quick-scan-result.interface';
 
 @Component({
   selector: 'app-quick-scan-page',
@@ -12,7 +12,7 @@ import { PatientsApisService } from '../../patients/patients-apis-service';
 })
 export class QuickScanPage {
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
-  private readonly patientsApisService = inject(PatientsApisService);
+  private readonly quickScanApisService = inject(QuickScanApisService);
 
   // Upload state
   selectedFile = signal<File | null>(null);
@@ -25,7 +25,7 @@ export class QuickScanPage {
   error = signal<string | null>(null);
 
   // Result state
-  scanResult = signal<ScanResponseI | null>(null);
+  scanResult = signal<QuickScanResult | null>(null);
 
   // Computed helpers
   canSubmit = computed(() => !!this.selectedFile() && !this.isLoading());
@@ -113,12 +113,10 @@ export class QuickScanPage {
     const formData = new FormData();
     formData.append('file', file);
 
-    this.patientsApisService.createScan(formData).subscribe({
+    this.quickScanApisService.createQuickScan(formData).subscribe({
       next: (response) => {
-        setTimeout(() => {
-          this.scanResult.set(response.data);
-          this.isLoading.set(false);
-        }, 1000);
+        this.scanResult.set(response.data);
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error(err);

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { HomeApisService } from './home-apis-service';
-import { recentActivityI } from './interfaces/stats.interface';
 import { Router } from '@angular/router';
 
 @Component({
@@ -39,13 +38,11 @@ export class Home implements OnInit {
   ];
 
   currentPage = signal(1);
+  total_doctors = signal(0);
   total_patients = signal(0);
   total_scans = signal(0);
-  pending_scans = signal(0);
 
   imageErrors: { [id: number]: boolean } = {};
-
-  allScans = signal<recentActivityI[]>([]);
 
   ngOnInit(): void {
     this.findAllStats();
@@ -54,10 +51,9 @@ export class Home implements OnInit {
   findAllStats() {
     this.homeApisService.findAllStats().subscribe({
       next: (response) => {
-        this.total_patients.set(response.data.stats.total_patients);
-        this.total_scans.set(response.data.stats.total_scans);
-        this.pending_scans.set(response.data.stats.pending_scans);
-        this.allScans.set(response.data.recent_activity);
+        this.total_doctors.set(response.data.total_doctors);
+        this.total_patients.set(response.data.total_patients);
+        this.total_scans.set(response.data.total_scans);
       },
       error: (err) => {
         console.error(err);

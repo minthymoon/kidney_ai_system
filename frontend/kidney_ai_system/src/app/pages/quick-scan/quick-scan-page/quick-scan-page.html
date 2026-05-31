@@ -230,12 +230,12 @@
       } @else {
         <!-- ── Result content ── -->
         <div class="result-content">
-          <div class="result-header">
+          <!-- <div class="result-header">
             <div class="result-id">
               <span class="id-label">Record ID</span>
               <span class="id-value">#{{ scanResult()!.id }}</span>
             </div>
-          </div>
+          </div> -->
 
           <div class="result-block highlight-block">
             <span class="block-label">AI Prediction</span>
@@ -256,7 +256,7 @@
                 </svg>
               </div>
               <span class="prediction-text">
-                {{ scanResult()!.ai_prediction }}
+                {{ scanResult()!.result ? scanResult()!.result : 'No abnormalities detected' }}
               </span>
             </div>
           </div>
@@ -265,11 +265,7 @@
             <div class="confidence-header">
               <span class="block-label">Confidence Score</span>
               <span class="confidence-value">
-                {{
-                  scanResult()!.confidence_score !== null
-                    ? (scanResult()!.confidence_score | number: '1.1-2') + '%'
-                    : '—'
-                }}
+                {{ scanResult()!.confidence }}
               </span>
             </div>
           </div>

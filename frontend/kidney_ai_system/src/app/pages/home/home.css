@@ -389,3 +389,17 @@ tbody tr:hover {
 .view-btn:hover {
   background: #b5d4f4;
 }
+
+.chart-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.chart-container {
+  height: 260px;
+  width: 100%;
+  position: relative;
+}

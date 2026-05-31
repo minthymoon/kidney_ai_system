@@ -65,8 +65,7 @@ export class AllAdmins implements OnInit {
   }
 
   deleteAdmin(admin: AdminOverviewI) {
-    // Hook into your delete service/confirmation dialog here
-    console.log('Delete admin', admin.admin_id);
+    this.router.navigate([`delete-admin/${admin.admin_id}`]);
   }
 
   goToCreateAdmin() {
