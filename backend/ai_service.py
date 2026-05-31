@@ -34,12 +34,6 @@ def load_trained_model():
 load_trained_model()
 
 def preprocess_image(file_content: bytes) -> np.ndarray:
-    """
-    Accepts raw image bytes.
-    Returns a batched float32 array of shape (1, IMG_SIZE, IMG_SIZE, 3).
-    NOTE: Do NOT normalize to [0,1] — EfficientNetB6 handles
-    its own normalization internally. Pass raw [0, 255] values.
-    """
     img = Image.open(io.BytesIO(file_content)).convert("RGB")
     img = img.resize((IMG_SIZE, IMG_SIZE))
     arr = np.array(img, dtype=np.float32)
@@ -47,10 +41,6 @@ def preprocess_image(file_content: bytes) -> np.ndarray:
     return arr
 
 def predict_kidney_image(file_content: bytes, _model=None):
-    """
-    _model param kept for signature compatibility but ignored
-    (model is loaded globally above).
-    """
     if model is None:
         raise RuntimeError("Model is not loaded. Check that config.json and model.weights.h5 exist in the backend folder.")
 
