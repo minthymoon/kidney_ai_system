@@ -1002,7 +1002,6 @@ async def get_all_records_admin(
     records = db.query(models.MedicalRecord)\
         .order_by(models.MedicalRecord.id.desc())\
         .all()
-
     base_url = str(request.base_url).rstrip("/")
 
     overview = []
@@ -1012,11 +1011,15 @@ async def get_all_records_admin(
             image_url = f"{base_url}{image_url}"
 
         overview.append({
-            "record_id": record.id,
+            "id": record.id,
             "patient_id": record.patient_id,
             "doctor_id": record.doctor_id,
             "image_url": image_url,
-            "created_at": record.created_at,
+            "scan_date": record.scan_date,
+            "ai_prediction": record.ai_prediction,
+            "confidence_score": record.confidence_score,
+            "doctor_notes": record.doctor_notes,
+            "status": record.status,
         })
 
     return {
