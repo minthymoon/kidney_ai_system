@@ -304,6 +304,7 @@ def update_doctor_profile(
         "status": "success",
         "data": db_user
     }
+
 #POST:change password
 @app.post("/doctors/change-password", response_model=schemas.StandardResponse[dict])
 def change_password(
@@ -315,7 +316,7 @@ def change_password(
     db_user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     
     if not db_user:
-        raise HTTPException(status_code=404, detail="Doctor not found")
+        raise HTTPException(status_code=404, detail="user not found")
 
     if not verify_password(pass_data.old_password, db_user.password_hash):
         raise HTTPException(
