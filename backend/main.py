@@ -1058,11 +1058,15 @@ async def get_single_record_admin(
         "message": "Medical record retrieved successfully",
         "status": "success",
         "data": {
-            "record_id": record.id,
+            "id": record.id,
             "patient_id": record.patient_id,
             "doctor_id": record.doctor_id,
             "image_url": image_url,
-            "created_at": record.created_at,
+            "scan_date": record.scan_date,
+            "ai_prediction": record.ai_prediction,
+            "confidence_score": record.confidence_score,
+            "doctor_notes": record.doctor_notes,
+            "status": record.status,
         }
     }
 
