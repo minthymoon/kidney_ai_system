@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthApisService } from '../auth-apis-service';
@@ -14,7 +14,6 @@ import { StorageService } from '../../../core/services/storage/storage';
 export class Login {
   private readonly router = inject(Router);
   private readonly storageService = inject(StorageService);
-
   private readonly authApisService = inject(AuthApisService);
 
   userName: string = '';
@@ -22,30 +21,53 @@ export class Login {
   showPassword: boolean = false;
   isLoading: boolean = false;
 
+  errorMessage = signal<string | null>(null);
+
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 
   onLogin(): void {
-    if (!this.userName || !this.password) return;
+    if (!this.userName || !this.password) {
+      this.errorMessage.set('Please enter your username and password.');
+      return;
+    }
+
+    this.errorMessage.set(null);
     this.isLoading = true;
 
-    this.authApisService.login({ username: this.userName, password: this.password }).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        const role = this.getRoleFromToken(response.data.access_token);
-        if (+role! == 2) {
-          this.storageService.accessToken = response.data.access_token;
-          this.router.navigate(['home']);
-        } else {
-          alert('Unauthorized: You do not have permission to access this application.');
-        }
-      },
-      error: (err) => {
-        console.error(err);
-        this.isLoading = false;
-      },
-    });
+    this.authApisService
+      .login({
+        username: this.userName,
+        password: this.password,
+      })
+      .subscribe({
+        next: (response) => {
+          this.isLoading = false;
+
+          const role = this.getRoleFromToken(response.data.access_token);
+
+          if (+role! === 2) {
+            this.storageService.accessToken = response.data.access_token;
+            this.router.navigate(['home']);
+          } else {
+            this.errorMessage.set(
+              'Unauthorized: You do not have permission to access this application.',
+            );
+          }
+        },
+        error: (err) => {
+          console.error(err);
+          this.isLoading = false;
+
+          this.errorMessage.set(
+            err?.error?.detail ||
+              err?.error?.message ||
+              err?.message ||
+              'An unexpected error occurred.',
+          );
+        },
+      });
   }
 
   getRoleFromToken(token: string): string | null {

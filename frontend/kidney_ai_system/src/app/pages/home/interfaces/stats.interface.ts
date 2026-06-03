@@ -18,7 +18,16 @@ export interface recentActivityI {
   image_url: string;
   patient_name: string;
   status: string;
+  patient?: PatientInfo;
   scan_date: string;
+}
+
+export interface PatientInfo {
+  first_name: string;
+  last_name: string;
+  date_of_birth: string;
+  phone_number: string;
+  email: string;
 }
 
 export interface ChartDateI {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthApisService } from '../auth-apis-service';
@@ -22,12 +22,19 @@ export class Login {
   showPassword: boolean = false;
   isLoading: boolean = false;
 
+  errorMessage = signal<string | null>(null);
+
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 
   onLogin(): void {
-    if (!this.userName || !this.password) return;
+    if (!this.userName || !this.password) {
+      this.errorMessage.set('Please enter your username and password.');
+      return;
+    }
+    this.errorMessage.set(null);
+
     this.isLoading = true;
 
     this.authApisService.login({ username: this.userName, password: this.password }).subscribe({
@@ -44,6 +51,13 @@ export class Login {
       error: (err) => {
         console.error(err);
         this.isLoading = false;
+
+        this.errorMessage.set(
+          err?.error?.detail ||
+            err?.error?.message ||
+            err?.message ||
+            'An unexpected error occurred.',
+        );
       },
     });
   }
