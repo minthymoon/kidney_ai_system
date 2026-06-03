@@ -2,14 +2,12 @@ export interface StatsI {
   total_doctors: number;
   total_patients: number;
   total_scans: number;
-  distribution: DistributionI;
+  distribution: ChartDateI[];
 }
 
-interface DistributionI {
-  Cyst: number;
-  Normal: number;
-  Stone: number;
-  Tumor: number;
+export interface ChartDateI {
+  label: string;
+  value: number;
 }
 
 export interface recentActivityI {

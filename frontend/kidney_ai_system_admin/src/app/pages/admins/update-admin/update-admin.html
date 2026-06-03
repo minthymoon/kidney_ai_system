@@ -1,1 +1,153 @@
-<p>update-admin works!</p>
+<div class="page-wrapper">
+  <div class="card">
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="form-container">
+        <div class="form-header">
+          <div>
+            <h2>Edit Admin</h2>
+            <p>Fill in the details below to update the admin's information.</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #editAdminForm="ngForm" novalidate>
+          <!-- PERSONAL INFORMATION -->
+          <div class="section-label">Personal Information</div>
+
+          <div class="row-two">
+            <div class="field-group">
+              <label for="firstName">First Name</label>
+              <input
+                id="firstName"
+                type="text"
+                name="firstName"
+                [(ngModel)]="firstName"
+                placeholder="Doha"
+                autocomplete="given-name"
+                required
+              />
+            </div>
+            <div class="field-group">
+              <label for="lastName">Last Name</label>
+              <input
+                id="lastName"
+                type="text"
+                name="lastName"
+                [(ngModel)]="lastName"
+                placeholder="Afaneh"
+                autocomplete="family-name"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="email">Work Email</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="2"
+                    y="4"
+                    width="20"
+                    height="16"
+                    rx="2"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                  />
+                  <path
+                    d="M2 8l10 6 10-6"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                [(ngModel)]="email"
+                placeholder="admin&#64;hospital.org"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="username">Username</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="#9ca3af" stroke-width="1.8" />
+                  <path
+                    d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <input
+                id="username"
+                type="text"
+                name="username"
+                [(ngModel)]="username"
+                placeholder="admin.Doha"
+                autocomplete="username"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="phone_number">Phone number</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="#9ca3af" stroke-width="1.8" />
+                  <path
+                    d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
+                    stroke="#9ca3af"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <input
+                id="phone_number"
+                type="text"
+                name="phone_number"
+                [(ngModel)]="phone_number"
+                placeholder="+254 700 000 000"
+                autocomplete="tel"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="onCancel()">Cancel</button>
+            <button
+              type="submit"
+              class="btn-primary"
+              [class.loading]="isLoading"
+              [disabled]="isLoading || !formValid"
+            >
+              @if (!isLoading) {
+                Edit Admin
+              }
+              @if (isLoading) {
+                <span class="spinner-wrap">
+                  <span class="spinner"></span>
+                  Updating…
+                </span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,10 +9,14 @@ export class ScansApisService {
   private readonly apis = inject(Apis);
 
   findOneScan(scanID: string) {
-    return this.apis.get<recentActivityI>('analysis/records/' + scanID);
+    return this.apis.get<recentActivityI>('admin/records/' + scanID);
   }
 
   findALlScans() {
     return this.apis.get<recentActivityI[]>('admin/records');
+  }
+
+  deleteScan(scanID: string) {
+    return this.apis.delete('analysis/records/' + scanID);
   }
 }

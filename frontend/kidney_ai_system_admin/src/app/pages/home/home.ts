@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { HomeApisService } from './home-apis-service';
 import { Router } from '@angular/router';
+import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
+
+Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
 @Component({
   selector: 'app-home',
@@ -12,6 +15,11 @@ import { Router } from '@angular/router';
 export class Home implements OnInit {
   private readonly homeApisService = inject(HomeApisService);
   private readonly router = inject(Router);
+
+  @ViewChild('diseaseChart')
+  diseaseChartRef!: ElementRef<HTMLCanvasElement>;
+
+  private chart?: Chart;
 
   stats = [
     {
@@ -54,6 +62,8 @@ export class Home implements OnInit {
         this.total_doctors.set(response.data.total_doctors);
         this.total_patients.set(response.data.total_patients);
         this.total_scans.set(response.data.total_scans);
+
+        this.createDiseaseChart(response.data.distribution);
       },
       error: (err) => {
         console.error(err);
@@ -98,5 +108,49 @@ export class Home implements OnInit {
     if (score >= 80) return '#e6f0fb';
     if (score >= 60) return '#faeeda';
     return '#fcebeb';
+  }
+
+  createDiseaseChart(chartData: { label: string; value: number }[]) {
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    const labels = chartData.map((item) => item.label);
+    const values = chartData.map((item) => item.value);
+
+    const colors = [
+      '#0ea5e9',
+      '#14b8a6',
+      '#f59e0b',
+      '#ef4444',
+      '#8b5cf6',
+      '#ec4899',
+      '#84cc16',
+      '#06b6d4',
+    ];
+
+    this.chart = new Chart(this.diseaseChartRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: colors,
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+        },
+      },
+    });
   }
 }

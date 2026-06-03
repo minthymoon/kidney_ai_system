@@ -15,6 +15,9 @@ import { AllAdmins } from './pages/admins/all-admins/all-admins';
 import { CreateAdmin } from './pages/admins/create-admin/create-admin';
 import { DeleteDoctorDialog } from './pages/patients/delete-doctor-dialog/delete-doctor-dialog';
 import { DeleteAdmin } from './pages/admins/delete-admin/delete-admin';
+import { EditDoctor } from './pages/patients/edit-doctor/edit-doctor';
+import { DoctorScans } from './pages/patients/doctor-scans/doctor-scans';
+import { UpdateAdmin } from './pages/admins/update-admin/update-admin';
 
 export const routes: Routes = [
   {
@@ -27,10 +30,13 @@ export const routes: Routes = [
       { path: 'profile', component: Profile, title: 'Profile' },
       { path: 'patients', component: AllPatients, title: 'All Patients' },
       { path: 'create-doctor', component: CreatePatient, title: 'Create Doctor' },
+      { path: 'edit-doctor/:doctorID', component: EditDoctor, title: 'Edit Doctor' },
+      { path: 'doctor-scans/:doctorID', component: DoctorScans, title: 'Doctor Scans' },
       { path: 'scan-details-page/:scanID', component: ScanDetailsPage, title: 'Scan details page' },
       { path: 'admins', component: AllAdmins, title: 'All Admins' },
       { path: 'create-admin', component: CreateAdmin, title: 'Create Admin' },
       { path: 'delete-admin/:adminID', component: DeleteAdmin, title: 'Delete Admin' },
+      { path: 'edit-admin/:adminID', component: UpdateAdmin, title: 'Edit Admin' },
       { path: 'delete-doctor/:doctorID', component: DeleteDoctorDialog, title: 'Delete Doctor' },
     ],
   },

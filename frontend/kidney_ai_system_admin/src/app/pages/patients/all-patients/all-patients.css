@@ -353,3 +353,10 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  gap: 4px;
+}

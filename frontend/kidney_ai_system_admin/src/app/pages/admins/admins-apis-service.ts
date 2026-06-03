@@ -16,8 +16,16 @@ export class AdminsApisService {
     return this.apis.get<AdminOverviewI[]>('admin/admins-overview', filterPatientsDto);
   }
 
+  findOneAdmin(adminID: string) {
+    return this.apis.get<AdminOverviewI>(`admin/admins/${adminID}`);
+  }
+
   createAdmin(createAdminDto: CreateAdminDto) {
     return this.apis.post('admin/create-admin', createAdminDto);
+  }
+
+  updateAdmin(adminID: string, updateAdminDto: CreateAdminDto) {
+    return this.apis.patch(`admin/edit-admin/${adminID}`, updateAdminDto);
   }
 
   deleteAdmin(adminID: string) {

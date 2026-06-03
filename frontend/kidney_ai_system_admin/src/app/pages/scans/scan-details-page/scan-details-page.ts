@@ -95,6 +95,20 @@ export class ScanDetailsPage implements OnInit {
     this.imageError = true;
   }
 
+  confirmDelete() {
+    if (confirm('Are you sure you want to delete this scan?')) {
+      this.scansApisService.deleteScan(this.scanID()).subscribe({
+        next: () => {
+          console.log('Scan deleted successfully');
+          this.goBack();
+        },
+        error: (err) => {
+          console.error('Error deleting scan:', err);
+        },
+      });
+    }
+  }
+
   goBack(): void {
     window.history.back();
   }

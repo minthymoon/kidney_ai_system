@@ -1,0 +1,191 @@
+<!-- doctor-scans.html -->
+@if (doctor()) {
+  <div class="page-wrapper">
+    <!-- Doctor Profile Card -->
+    <div class="profile-card">
+      <div class="profile-accent"></div>
+
+      <div class="profile-main">
+        <div class="avatar-ring">
+          <div class="avatar">
+            <span
+              >{{ doctor()?.first_name?.[0]?.toUpperCase()
+              }}{{ doctor()?.last_name?.[0]?.toUpperCase() }}</span
+            >
+          </div>
+          <div class="avatar-status" [class.active]="doctor()!.is_active"></div>
+        </div>
+
+        <div class="profile-info">
+          <div class="profile-header">
+            <div>
+              <p class="profile-label">Physician Profile</p>
+              <h1 class="profile-name">
+                Dr. {{ doctor()!.first_name | titlecase }} {{ doctor()!.last_name | titlecase }}
+              </h1>
+              <p class="profile-username">&#64;{{ doctor()!.username }}</p>
+            </div>
+            <span class="status-badge" [class.active]="doctor()!.is_active">
+              <span class="status-dot"></span>
+              {{ doctor()!.is_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="profile-contacts">
+            <div class="contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path
+                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              <span>{{ doctor()!.email }}</span>
+            </div>
+            <div class="contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.58A16 16 0 0 0 15.42 16.07l.96-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
+                />
+              </svg>
+              <span>{{ doctor()!.phone_number }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-number">{{ doctor()!.number_of_patients }}</span>
+          <span class="stat-label">Patients</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-box">
+          <span class="stat-number">{{ doctor()!.number_of_scans }}</span>
+          <span class="stat-label">Total Scans</span>
+        </div>
+        <div class="stat-divider"></div>
+      </div>
+    </div>
+
+    <!-- Scans Section -->
+    <div class="scans-section">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2 class="section-title">Scan Records</h2>
+          <span class="scan-count">{{ doctor()!.scans.length }} scans</span>
+        </div>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="scans-grid">
+        @for (scan of doctor()!.scans; track scan.scan_id) {
+          <div class="scan-card" [class]="'prediction-' + scan.ai_prediction.toLowerCase()">
+            <div class="scan-image-wrapper">
+              <img
+                [src]="scan.image_url"
+                [alt]="'Scan ' + scan.scan_id"
+                class="scan-image"
+                onerror="
+                  this.style.display = 'none';
+                  this.nextElementSibling.style.display = 'flex';
+                "
+              />
+              <div class="scan-image-fallback">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  width="32"
+                  height="32"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+                <span>No preview</span>
+              </div>
+              <div class="scan-overlay">
+                <span class="scan-id-badge">#{{ scan.scan_id }}</span>
+              </div>
+            </div>
+
+            <div class="scan-body">
+              <div class="scan-top-row">
+                <div class="prediction-tag" [class]="'tag-' + scan.ai_prediction.toLowerCase()">
+                  <span class="tag-dot"></span>
+                  {{ scan.ai_prediction }}
+                </div>
+                <span class="scan-status-chip" [class]="'chip-' + scan.status">{{
+                  scan.status
+                }}</span>
+              </div>
+
+              <div class="confidence-section">
+                <div class="confidence-label-row">
+                  <span class="confidence-text">AI Confidence</span>
+                  <span class="confidence-value"
+                    >{{ scan.confidence_score | number: '1.1-1' }}%</span
+                  >
+                </div>
+                <div class="confidence-bar-track">
+                  <div
+                    class="confidence-bar-fill"
+                    [style.width.%]="scan.confidence_score"
+                    [class]="getConfidenceClass(scan.confidence_score)"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="scan-meta">
+                <div class="meta-item">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    width="13"
+                    height="13"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <span>Patient #{{ scan.patient_id }}</span>
+                </div>
+                <div class="meta-item">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    width="13"
+                    height="13"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span>{{ scan.scan_date | date: 'MMM d, y' }}</span>
+                </div>
+              </div>
+
+              @if (scan.doctor_notes) {
+                <div class="notes-box">
+                  <p class="notes-text">{{ scan.doctor_notes }}</p>
+                </div>
+              } @else {
+                <p class="no-notes">No doctor notes added</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="loading-state">
+    <div class="pulse-ring"></div>
+    <p>Loading doctor profile...</p>
+  </div>
+}
