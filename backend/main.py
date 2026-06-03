@@ -506,15 +506,28 @@ async def get_single_medical_record(
     if record.doctor_id != doctor_id:
         raise HTTPException(status_code=403, detail="Permission denied")
     
+    patient = db.query(models.Patient).filter(models.Patient.id == record.patient_id).first()
+
     base_url = str(request.base_url).rstrip("/")
-    if record.image_url and not record.image_url.startswith("http"):
-        record.image_url = f"{base_url}{record.image_url}"
+    image_url = record.image_url
+    if image_url and not image_url.startswith("http"):
+        image_url = f"{base_url}{image_url}"
 
     return {
-        "message": "Medical record retrieved successfully",
-        "status": "success",
-        "data": record
+    "message": "Medical record retrieved successfully",
+    "status": "success",
+    "data": {
+        **record.__dict__,
+        "image_url": image_url,
+        "patient": {
+            "first_name": patient.first_name,
+            "last_name": patient.last_name,
+            "date_of_birth": patient.date_of_birth,
+            "phone_number": patient.phone_number,
+            "email": patient.email,
+        } if patient else None
     }
+}
 
 
 # GET ALL RECORDS

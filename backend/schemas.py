@@ -44,6 +44,15 @@ class PasswordChange(BaseModel):
     old_password: str
     new_password: str
 
+class PatientInfo(BaseModel):
+    first_name: str
+    last_name: str
+    date_of_birth: Optional[date] = None
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class MedicalRecordCreate(BaseModel):
     patient_id: int
@@ -56,6 +65,7 @@ class MedicalRecordResponse(MedicalRecordCreate):
     scan_date: datetime
     image_url: Optional[str] = None
     status: str
+    patient: Optional[PatientInfo] = None
 
     class Config:
         from_attributes = True
@@ -78,6 +88,8 @@ class PatientResponse(PatientCreate):
 
     class Config:
         from_attributes = True
+
+
 
 class PatientListResponse(PatientCreate): #no returning records with patients :)
     id: int
