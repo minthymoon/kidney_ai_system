@@ -2,7 +2,8 @@ export interface StatsI {
   total_doctors: number;
   total_patients: number;
   total_scans: number;
-  distribution: ChartDateI[];
+  chart_data: ChartDateI[];
+  trend_chart_data: TrendChartItem[];
 }
 
 export interface ChartDateI {
@@ -20,4 +21,9 @@ export interface recentActivityI {
   patient_name: string;
   status: string;
   scan_date: string;
+}
+
+export interface TrendChartItem {
+  month: string;
+  value: number;
 }

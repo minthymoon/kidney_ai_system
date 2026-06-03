@@ -6,6 +6,7 @@ export interface StatsI {
   };
   chart_data: ChartDateI[];
   recent_activity: recentActivityI[];
+  trend_chart_data: TrendChartItem[];
 }
 
 export interface recentActivityI {
@@ -22,5 +23,10 @@ export interface recentActivityI {
 
 export interface ChartDateI {
   label: string;
+  value: number;
+}
+
+export interface TrendChartItem {
+  month: string;
   value: number;
 }

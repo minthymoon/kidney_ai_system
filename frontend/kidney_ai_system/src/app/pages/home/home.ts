@@ -3,10 +3,32 @@ import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angul
 import { HomeApisService } from './home-apis-service';
 import { recentActivityI } from './interfaces/stats.interface';
 import { Router } from '@angular/router';
-import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
+import {
+  Chart,
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler,
+} from 'chart.js';
 
-Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
-
+Chart.register(
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler,
+);
 @Component({
   selector: 'app-home',
   imports: [CommonModule],
@@ -20,7 +42,11 @@ export class Home implements OnInit {
   @ViewChild('diseaseChart')
   diseaseChartRef!: ElementRef<HTMLCanvasElement>;
 
+  @ViewChild('trendChart')
+  trendChartRef!: ElementRef<HTMLCanvasElement>;
+
   private chart?: Chart;
+  private trendChart?: Chart;
 
   stats = [
     {
@@ -69,6 +95,10 @@ export class Home implements OnInit {
         this.allScans.set(response.data.recent_activity);
 
         this.createDiseaseChart(response.data.chart_data);
+
+        if (response.data.trend_chart_data?.length) {
+          this.createTrendChart(response.data.trend_chart_data);
+        }
       },
       error: (err) => {
         console.error(err);
@@ -153,6 +183,59 @@ export class Home implements OnInit {
         plugins: {
           legend: {
             position: 'bottom',
+          },
+        },
+      },
+    });
+  }
+
+  createTrendChart(data: { month: string; value: number }[]) {
+    if (this.trendChart) {
+      this.trendChart.destroy();
+    }
+
+    const labels = data.map((d) => d.month);
+    const values = data.map((d) => d.value);
+
+    this.trendChart = new Chart(this.trendChartRef.nativeElement, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Monthly trend',
+            data: values,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563eb',
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.y} scans`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 12 } },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: '#94a3b8', font: { size: 12 } },
           },
         },
       },

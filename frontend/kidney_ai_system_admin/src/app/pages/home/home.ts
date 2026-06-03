@@ -2,9 +2,32 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { HomeApisService } from './home-apis-service';
 import { Router } from '@angular/router';
-import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
+import {
+  Chart,
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler,
+} from 'chart.js';
 
-Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
+Chart.register(
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler,
+);
 
 @Component({
   selector: 'app-home',
@@ -19,7 +42,11 @@ export class Home implements OnInit {
   @ViewChild('diseaseChart')
   diseaseChartRef!: ElementRef<HTMLCanvasElement>;
 
-  private chart?: Chart;
+  @ViewChild('trendChart')
+  trendChartRef!: ElementRef<HTMLCanvasElement>;
+
+  private diseaseChart?: Chart;
+  private trendChart?: Chart;
 
   stats = [
     {
@@ -63,7 +90,11 @@ export class Home implements OnInit {
         this.total_patients.set(response.data.total_patients);
         this.total_scans.set(response.data.total_scans);
 
-        this.createDiseaseChart(response.data.distribution);
+        this.createDiseaseChart(response.data.chart_data);
+
+        if (response.data.trend_chart_data?.length) {
+          this.createTrendChart(response.data.trend_chart_data);
+        }
       },
       error: (err) => {
         console.error(err);
@@ -111,8 +142,8 @@ export class Home implements OnInit {
   }
 
   createDiseaseChart(chartData: { label: string; value: number }[]) {
-    if (this.chart) {
-      this.chart.destroy();
+    if (this.diseaseChart) {
+      this.diseaseChart.destroy();
     }
 
     const labels = chartData.map((item) => item.label);
@@ -129,7 +160,7 @@ export class Home implements OnInit {
       '#06b6d4',
     ];
 
-    this.chart = new Chart(this.diseaseChartRef.nativeElement, {
+    this.diseaseChart = new Chart(this.diseaseChartRef.nativeElement, {
       type: 'doughnut',
       data: {
         labels,
@@ -148,6 +179,59 @@ export class Home implements OnInit {
         plugins: {
           legend: {
             position: 'bottom',
+          },
+        },
+      },
+    });
+  }
+
+  createTrendChart(data: { month: string; value: number }[]) {
+    if (this.trendChart) {
+      this.trendChart.destroy();
+    }
+
+    const labels = data.map((d) => d.month);
+    const values = data.map((d) => d.value);
+
+    this.trendChart = new Chart(this.trendChartRef.nativeElement, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Monthly trend',
+            data: values,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563eb',
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.y} scans`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 12 } },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: '#94a3b8', font: { size: 12 } },
           },
         },
       },
