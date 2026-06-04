@@ -24,7 +24,6 @@ def load_trained_model():
         model.load_weights(WEIGHTS_PATH)
 
         model_summary = f"Input: {model.input_shape}, Output: {model.output_shape}"
-        print(f"✅ TensorFlow Kidney Model loaded successfully! ({model_summary})")
     else:
         if not os.path.exists(CONFIG_PATH):
             print(f"⚠️ Warning: config.json not found at {CONFIG_PATH}")
@@ -58,4 +57,3 @@ if __name__ == "__main__":
     print(f"Config path:  {CONFIG_PATH}")
     print(f"Weights path: {WEIGHTS_PATH}")
     print(f"Categories recognized: {CLASS_NAMES}")
-    print("STATUS: READY FOR PREDICTIONS 🚀")

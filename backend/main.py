@@ -36,8 +36,7 @@ app.add_middleware(
 def root():
     return {
         "project": "Kidney AI Support System",
-        "status": "Online",
-        "phase": "1: Database Integration"
+        "status": "Online"
     }
 
 @app.get("/test-db")
@@ -709,11 +708,9 @@ def create_super_admin():
     try:
         admin = db.query(models.User).filter(models.User.username == "super_admin").first()
         if not admin:
-            print("Creating Super Admin...")
             
             admin_password = os.getenv("SUPER_ADMIN_PASSWORD")
             if not admin_password:
-                print("⚠️ Warning: SUPER_ADMIN_PASSWORD not set in .env. Using fallback 'Admin123!'")
                 admin_password = "Admin123!"
 
             new_admin = models.User(
@@ -729,9 +726,6 @@ def create_super_admin():
             
             db.add(new_admin)
             db.commit()
-            print("👑 Super Admin 'super_admin' created successfully!")
-        else:
-            print("✅ Super Admin already exists.")
     except Exception as e:
         db.rollback()
         print(f"❌ CRITICAL: Seed failed. Error detail: {e}")
