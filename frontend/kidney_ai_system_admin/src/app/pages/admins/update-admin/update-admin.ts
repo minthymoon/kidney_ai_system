@@ -79,7 +79,7 @@ export class UpdateAdmin implements OnInit {
 
     this.adminsApisService
       .updateAdmin(this.adminID()!, {
-        first_name: this.firstName,
+        first_name: this.firstName(),
         last_name: this.lastName,
         email: this.email,
         username: this.username,

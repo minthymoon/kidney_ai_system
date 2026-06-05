@@ -11,6 +11,9 @@ from .ai_service import predict_kidney_image, model
 from fastapi.staticfiles import StaticFiles
 from fastapi import Form
 from .schemas import UserResponse
+from pydantic import BaseModel
+from typing import Optional
+from fastapi import Body
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -850,16 +853,17 @@ def get_doctors_overview(db: Session = Depends(get_db), current_user: models.Use
     }
 
 
-#EDIT DOCTOR PROFILE (both admin and superadmin)
+ #EDIT DOCTOR PROFILE (both admin and superadmin)
 @app.patch("/admin/edit-doctor/{doctor_id}")
 def edit_doctor(
     doctor_id: int,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
-    first_name: str = None,
-    last_name: str = None,
-    email: str = None,
-    phone_number: str = None,
+    username: Optional[str] = Body(default=None),
+    first_name: Optional[str] = Body(default=None),
+    last_name: Optional[str] = Body(default=None),
+    email: Optional[str] = Body(default=None),
+    phone_number: Optional[str] = Body(default=None),
 ):
     user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
 
@@ -874,6 +878,14 @@ def edit_doctor(
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
 
+    if username is not None:
+        existing = db.query(models.User).filter(
+            models.User.username == username,
+            models.User.id != doctor_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already in use")
+        doctor.username = username
     if first_name is not None:
         doctor.first_name = first_name
     if last_name is not None:
@@ -888,7 +900,7 @@ def edit_doctor(
         doctor.email = email
     if phone_number is not None:
         doctor.phone_number = phone_number
-    db.add(doctor)
+
     db.commit()
     db.refresh(doctor)
 
@@ -1203,10 +1215,11 @@ def edit_admin(
     admin_id: int,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
-    first_name: str = None,
-    last_name: str = None,
-    email: str = None,
-    phone_number: str = None,
+    username: Optional[str] = Body(default=None),
+    first_name: Optional[str] = Body(default=None),
+    last_name: Optional[str] = Body(default=None),
+    email: Optional[str] = Body(default=None),
+    phone_number: Optional[str] = Body(default=None),
 ):
     user_role = current_user.get("role") if isinstance(current_user, dict) else getattr(current_user, "role", None)
 
@@ -1221,6 +1234,14 @@ def edit_admin(
     if not admin:
         raise HTTPException(status_code=404, detail="Admin not found")
 
+    if username is not None:
+        existing = db.query(models.User).filter(
+            models.User.username == username,
+            models.User.id != admin_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already in use")
+        admin.username = username
     if first_name is not None:
         admin.first_name = first_name
     if last_name is not None:
@@ -1235,7 +1256,7 @@ def edit_admin(
         admin.email = email
     if phone_number is not None:
         admin.phone_number = phone_number
-    db.add(admin)
+
     db.commit()
     db.refresh(admin)
 
@@ -1251,7 +1272,6 @@ def edit_admin(
             "phone_number": admin.phone_number,
         }
     }
-
 
 #DELETE ADMIN (superadmin only)
 @app.delete("/admin/delete-admin/{admin_id}")

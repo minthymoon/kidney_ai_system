@@ -79,7 +79,7 @@ export class EditDoctor implements OnInit {
 
     this.patientsApisService
       .updateDoctor(this.doctorID()!, {
-        first_name: this.firstName,
+        first_name: this.firstName(),
         last_name: this.lastName,
         email: this.email,
         username: this.username,
