@@ -36,8 +36,7 @@ docker-compose up --build
 
 ### Access the app
 
-| Service | URL |
-|---------|-----|
+
 | Backend API | http://localhost:8000 |
 | API Docs | http://localhost:8000/docs |
 | Main Portal | http://localhost:4200 |
