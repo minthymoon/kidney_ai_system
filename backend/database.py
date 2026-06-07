@@ -7,7 +7,6 @@ import os
 load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
-#SQLALCHEMY_DATABASE_URL = "postgresql://postgres:12345678@localhost:5432/kidney-ai-db"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
